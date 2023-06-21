@@ -1,6 +1,15 @@
 <Project Sdk="Godot.NET.Sdk/4.0.2">
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <EnableDynamicLoading>true</EnableDynamicLoading>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <EnableDynamicLoading>true</EnableDynamicLoading>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <Content Include="RiderTestRunner\NetCoreRunner.tscn" />
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\GdExtension\GdExtension.csproj" 
+                          OutputItemType="Analyzer" 
+                          ReferenceOutputAssembly="false" />
+    </ItemGroup>
 </Project>
