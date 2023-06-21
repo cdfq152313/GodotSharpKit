@@ -4,7 +4,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Godot4Demo", "MainProject\G
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{054A18E1-C6C5-4D20-9042-52C96EA2050B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GdExtension", "GdExtension\GdExtension.csproj", "{6369E1AB-1EF8-4E54-9D0F-90E7DFA1BE78}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GdExtension.Generator", "GdExtension.Generator\GdExtension.Generator.csproj", "{6369E1AB-1EF8-4E54-9D0F-90E7DFA1BE78}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -8,8 +8,6 @@
         <Content Include="RiderTestRunner\NetCoreRunner.tscn" />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\GdExtension\GdExtension.csproj" 
-                          OutputItemType="Analyzer" 
-                          ReferenceOutputAssembly="false" />
+        <ProjectReference Include="..\GdExtension.Generator\GdExtension.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
 </Project>
