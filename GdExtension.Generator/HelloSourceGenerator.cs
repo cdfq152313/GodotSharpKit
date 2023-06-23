@@ -1,12 +1,15 @@
 ﻿using Microsoft.CodeAnalysis;
+using GeneratorContext = Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext;
 
-namespace GdExtension
+namespace GdExtension;
+
+[Generator]
+public class HelloGenerator : ISourceGenerator
 {
-    [Generator]
-    public class HelloSourceGenerator : IIncrementalGenerator
+    public void Initialize(GeneratorInitializationContext context) { }
+
+    public void Execute(GeneratorExecutionContext context)
     {
-        public void Initialize(IncrementalGeneratorInitializationContext context)
-        {
-        }
+        context.AddSource("HelloGenerator.g.cs", "public class HelloGenerator {}");
     }
 }

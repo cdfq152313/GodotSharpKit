@@ -1,8 +1,11 @@
-﻿using System;
+﻿namespace GdExtension;
 
-namespace GdExtension
+[AttributeUsage(AttributeTargets.Field)]
+public class OnReadyNode : Attribute
 {
-    public class OnReadyNode : Attribute
-    {
-    }
+}
+
+[AttributeUsage(AttributeTargets.Class)]
+public class OnReadyClass : Attribute
+{
 }
