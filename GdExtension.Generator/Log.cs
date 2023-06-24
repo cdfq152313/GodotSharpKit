@@ -7,12 +7,15 @@ public class Log
 {
     private static bool _debug = true;
 
-    public Log(string name)
+    public Log(IncrementalGeneratorInitializationContext context, string name)
     {
+        _context = context;
         _name = name;
     }
 
+    private readonly IncrementalGeneratorInitializationContext _context;
     private readonly string _name;
+    private int counter = 0;
     private StringBuilder _stringBuilder = new();
 
     private void Print(string level, string message)
@@ -25,21 +28,14 @@ public class Log
         Print("Debug", message);
     }
 
-    public void Flush(IncrementalGeneratorInitializationContext context)
+    public void Flush()
     {
-        if (_debug)
+        if (_debug && _stringBuilder.Length != 0)
         {
-            context.RegisterPostInitializationOutput(
-                ctx => ctx.AddSource($"{_name}.log.cs", _stringBuilder.ToString())
-            );
-        }
-    }
-
-    public void Flush(SourceProductionContext context)
-    {
-        if (_debug)
-        {
-            context.AddSource($"{_name}.log.cs", _stringBuilder.ToString());
+            var file = $"{_name}{counter++}.log.cs";
+            var result = _stringBuilder.ToString();
+            _context.RegisterPostInitializationOutput(ctx => ctx.AddSource(file, result));
+            _stringBuilder = new StringBuilder();
         }
     }
 }

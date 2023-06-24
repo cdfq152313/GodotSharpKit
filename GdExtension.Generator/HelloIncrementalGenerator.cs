@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Diagnostics;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -7,15 +8,16 @@ namespace GdExtension;
 [Generator(LanguageNames.CSharp)]
 public class HelloIncrementalGenerator : IIncrementalGenerator
 {
-    private Log Log = new Log(nameof(HelloIncrementalGenerator));
+    private Log Log;
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
+        Log = new Log(context, nameof(HelloIncrementalGenerator));
         context.RegisterPostInitializationOutput(
             ctx =>
                 ctx.AddSource(
                     "HelloIncrementalGenerator.g.cs",
-                    "public class HelloIncrementalGenerator{}\n"
+                    "public class HelloIncrementalGenerator{}"
                 )
         );
         Init(context);
@@ -47,12 +49,11 @@ public class HelloIncrementalGenerator : IIncrementalGenerator
             select attribute;
         foreach (var attribute in query)
         {
-            if (attribute.Name.ToString() == typeof(OnReadyClass).FullName)
+            if (attribute.ToFullString() == nameof(OnReadyClass))
             {
                 return true;
             }
         }
-
         return false;
     }
 
@@ -70,8 +71,6 @@ public class HelloIncrementalGenerator : IIncrementalGenerator
         SourceProductionContext context
     )
     {
-        Log.Debug("Hello");
-        Log.Flush(context);
         try
         {
             foreach (var node in nodes.Distinct())
@@ -88,8 +87,8 @@ public class HelloIncrementalGenerator : IIncrementalGenerator
                 //
 
                 context.AddSource(
-                    $"{node.Identifier.Text}.g.cs",
-                    "public partial class LaunchScreen { public void HelloWorld(){} }"
+                    $"{node.Identifier}.g.cs",
+                    $"public partial class {node.Identifier} {{ public void HelloWorld(){{ }} }}"
                 );
             }
         }
