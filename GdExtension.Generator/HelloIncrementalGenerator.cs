@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
-using System.Diagnostics;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace GdExtension;
@@ -25,12 +25,11 @@ public class HelloIncrementalGenerator : IIncrementalGenerator
 
     private void Init(IncrementalGeneratorInitializationContext context)
     {
-        var syntaxProvider = context.SyntaxProvider.CreateSyntaxProvider(
-            IsSyntaxTarget,
-            GetSyntaxTarget
-        );
-        var compilationProvider = context.CompilationProvider.Combine(syntaxProvider.Collect());
-        context.RegisterSourceOutput(compilationProvider, (c, s) => OnExecute(s.Right, s.Left, c));
+        var syntaxProvider = context.SyntaxProvider
+            .CreateSyntaxProvider(IsSyntaxTarget, GetSyntaxTarget)
+            .Where(v => v is not null)
+            .Select((s, _) => s!);
+        context.RegisterSourceOutput(syntaxProvider.Collect(), (c, s) => OnExecute(s, c));
     }
 
     private bool IsSyntaxTarget(SyntaxNode syntaxNode, CancellationToken cancellationToken)
@@ -44,12 +43,15 @@ public class HelloIncrementalGenerator : IIncrementalGenerator
         }
 
         var query =
-            from attributeList in classDeclarationSyntax.AttributeLists
+            from member in classDeclarationSyntax.Members
+            from attributeList in member.AttributeLists
             from attribute in attributeList.Attributes
             select attribute;
+
         foreach (var attribute in query)
         {
-            if (attribute.ToFullString() == nameof(OnReadyClass))
+            cancellationToken.ThrowIfCancellationRequested();
+            if (attribute.ToFullString() == nameof(OnReadyNode))
             {
                 return true;
             }
@@ -57,45 +59,72 @@ public class HelloIncrementalGenerator : IIncrementalGenerator
         return false;
     }
 
-    private ClassDeclarationSyntax GetSyntaxTarget(
+    private RootInfo? GetSyntaxTarget(
         GeneratorSyntaxContext context,
-        CancellationToken token
+        CancellationToken cancellationToken
     )
     {
-        return (ClassDeclarationSyntax)context.Node;
+        var model = context.SemanticModel;
+        var classSymbol = (ITypeSymbol)model.GetDeclaredSymbol(context.Node)!;
+        var query =
+            from member in classSymbol.GetMembers()
+            from attribute in member.GetAttributes()
+            where
+                attribute.AttributeClass.ContainingNamespace.Name == typeof(OnReadyNode).Namespace
+                && attribute.AttributeClass.Name == nameof(OnReadyNode)
+            select member;
+        var list = new List<GetNodeInfo>();
+        foreach (var member in query.OfType<IFieldSymbol>())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            list.Add(
+                new GetNodeInfo(
+                    member.Name,
+                    member.Type.Name,
+                    member.Type.ContainingNamespace.ToDisplayString()
+                )
+            );
+        }
+
+        if (list.Count == 0)
+        {
+            return null;
+        }
+        return new RootInfo(classSymbol.ContainingNamespace.Name, classSymbol.Name, list);
     }
 
-    private void OnExecute(
-        ImmutableArray<ClassDeclarationSyntax> nodes,
-        Compilation compilation,
-        SourceProductionContext context
-    )
+    private void OnExecute(ImmutableArray<RootInfo> array, SourceProductionContext context)
     {
-        try
+        foreach (var info in array)
         {
-            foreach (var node in nodes.Distinct())
-            {
-                if (context.CancellationToken.IsCancellationRequested)
-                    return;
-
-                // var model = compilation.GetSemanticModel(node.SyntaxTree);
-                // var symbol = model.GetDeclaredSymbol(Node(node));
-                // var attribute = symbol.GetAttributes().SingleOrDefault(x => x.AttributeClass.Name == attributeType);
-                // if (attribute is null) continue;
-                //
-                // var (generatedCode, error) = _GenerateCode(compilation, node, symbol, attribute);
-                //
-
-                context.AddSource(
-                    $"{node.Identifier}.g.cs",
-                    $"public partial class {node.Identifier} {{ public void HelloWorld(){{ }} }}"
-                );
-            }
-        }
-        catch (Exception e)
-        {
-            // Log.Debug("Exception!!");
-            throw;
+            context.CancellationToken.ThrowIfCancellationRequested();
+            var prefix = info.Namespace == "" ? "" : $"{info.Namespace}_";
+            var namespaceStatement = info.Namespace == "" ? "" : $"namespace {info.Namespace};";
+            var readyStatement = string.Join(
+                "\n",
+                info.NodeInfos.Select(v =>
+                {
+                    var prefix = v.Namespace == "" ? "" : $"{v.Namespace}.";
+                    return $"{v.Name} = GetNode<{prefix}{v.Type}>(\"{v.Name}\");";
+                })
+            );
+            context.AddSource(
+                $"{prefix}{info.ClassName}.g.cs",
+                @$"
+{namespaceStatement}
+public partial class {info.ClassName} 
+{{ 
+    public void OnReady()
+    {{
+        {readyStatement}
+    }} 
+}}
+"
+            );
         }
     }
 }
+
+record RootInfo(string Namespace, string ClassName, List<GetNodeInfo> NodeInfos);
+
+record GetNodeInfo(string Name, string Type, string Namespace);
