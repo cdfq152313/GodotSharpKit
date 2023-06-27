@@ -27,8 +27,11 @@ public partial class LaunchScreen : Node2D
         new HelloIncrementalGenerator();
     }
 
-    [OnReadyConnect(nameof(MySignal))]
-    private void OnMySignalTrigger() { }
+    [OnReadyConnect("", nameof(MySignal))]
+    private void OnMySignal() { }
+
+    [OnReadyConnect(nameof(_timer), nameof(Timer.Timeout))]
+    private void OnTimeout() { }
 
     // Called every frame. 'delta' is the elapsed time since the previous frame.
     public override void _Process(double delta) { }

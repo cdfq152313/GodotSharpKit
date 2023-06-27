@@ -57,7 +57,7 @@ public class HelloIncrementalGenerator : IIncrementalGenerator
         return false;
     }
 
-    private RootInfo? GetSyntaxTarget(
+    private ClassInfo? GetSyntaxTarget(
         GeneratorSyntaxContext context,
         CancellationToken cancellationToken
     )
@@ -69,55 +69,68 @@ public class HelloIncrementalGenerator : IIncrementalGenerator
             from attribute in member.GetAttributes()
             where
                 attribute.AttributeClass!.ContainingNamespace!.Name == typeof(OnReadyNode).Namespace
-            let attrInfo = attribute.AttributeClass!.Name switch
+            let actionInfo = attribute.AttributeClass!.Name switch
             {
                 nameof(OnReadyNode) when member is IFieldSymbol fieldSymbol
-                    => new NodeInfo(
+                    => new GetInfo(
                         fieldSymbol.Name,
                         fieldSymbol.Type.Name,
                         fieldSymbol.Type.ContainingNamespace.Name
                     ),
                 nameof(OnReadyConnect) when member is IMethodSymbol methodSymbol
-                    => new ConnectInfo(),
-                _ => new AttrInfo(),
+                    => new ConnectInfo(
+                        methodSymbol.Name,
+                        (string)attribute.ConstructorArguments[0].Value!,
+                        (string)attribute.ConstructorArguments[1].Value!
+                    ),
+                _ => new ActionInfo(),
             }
-            group attrInfo by attrInfo.GetType();
+            group actionInfo by actionInfo.GetType();
         var dict = query.ToDictionary(v => v.Key, v => v.ToList());
         if (dict.Count == 0)
         {
             return null;
         }
 
-        return new RootInfo(classSymbol.ContainingNamespace.Name, classSymbol.Name, dict);
+        return new ClassInfo(classSymbol.ContainingNamespace.Name, classSymbol.Name, dict);
     }
 
-    private void OnExecute(ImmutableArray<RootInfo> array, SourceProductionContext context)
+    private void OnExecute(ImmutableArray<ClassInfo> array, SourceProductionContext context)
     {
         foreach (var info in array)
         {
             context.CancellationToken.ThrowIfCancellationRequested();
-            var prefix = info.Namespace == "" ? "" : $"{info.Namespace}_";
             var namespaceStatement = info.Namespace == "" ? "" : $"namespace {info.Namespace};";
-            var nodeInfos = info.AttrInfoDict.ContainsKey(typeof(NodeInfo))
-                ? info.AttrInfoDict[typeof(NodeInfo)].OfType<NodeInfo>()
-                : new List<NodeInfo>();
-            var readyStatement = string.Join(
-                "\n",
-                nodeInfos.Select(v =>
-                {
-                    var prefix = v.FieldTypeNamespace == "" ? "" : $"{v.FieldTypeNamespace}.";
-                    return $"{v.FieldName} = GetNode<{prefix}{v.FieldType}>(\"{v.FieldName}\");";
-                })
+            var getInfos = info.ActionInfoDict
+                .GetValue(typeof(GetInfo), new List<ActionInfo>())!
+                .OfType<GetInfo>();
+            var getNodeStatement = string.Join(
+                "\n        ",
+                getInfos.Select(
+                    v =>
+                        $"{v.FieldName} = GetNode<{(v.FieldTypeNamespace == "" ? "" : $"{v.FieldTypeNamespace}.")}{v.FieldType}>(\"{v.GodotName}\");"
+                )
+            );
+            var connectInfos = info.ActionInfoDict
+                .GetValue(typeof(ConnectInfo), new List<ActionInfo>())!
+                .OfType<ConnectInfo>();
+            var connectSignalStatement = string.Join(
+                "\n        ",
+                connectInfos.Select(
+                    v =>
+                        $"{(v.Source.Length == 0 ? "" : $"{v.Source}.")}{v.Signal} += {v.MethodName};"
+                )
             );
             context.AddSource(
-                $"{prefix}{info.ClassName}.g.cs",
+                $"{(info.Namespace == "" ? "" : $"{info.Namespace.Replace(".", "_")}_")}{info.ClassName}.g.cs",
                 @$"
 {namespaceStatement}
 public partial class {info.ClassName} 
 {{ 
     public void OnReady()
     {{
-        {readyStatement}
+        {getNodeStatement}
+        {connectSignalStatement}
     }} 
 }}
 "
@@ -126,10 +139,20 @@ public partial class {info.ClassName}
     }
 }
 
-record RootInfo(string Namespace, string ClassName, IDictionary<Type, List<AttrInfo>> AttrInfoDict);
+record ClassInfo(
+    string Namespace,
+    string ClassName,
+    IDictionary<Type, List<ActionInfo>> ActionInfoDict
+);
 
-record AttrInfo;
+record ActionInfo;
 
-record NodeInfo(string FieldName, string FieldType, string FieldTypeNamespace) : AttrInfo;
+record GetInfo(string FieldName, string FieldType, string FieldTypeNamespace) : ActionInfo
+{
+    public string GodotName =>
+        FieldName.StartsWith("_")
+            ? FieldName[1].ToString().ToUpper() + FieldName.Substring(2)
+            : FieldName;
+}
 
-record ConnectInfo() : AttrInfo;
+record ConnectInfo(string MethodName, string Source, string Signal) : ActionInfo;

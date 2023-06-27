@@ -6,12 +6,12 @@ public class OnReadyNode : Attribute { }
 [AttributeUsage(AttributeTargets.Method)]
 public class OnReadyConnect : Attribute
 {
-    public OnReadyConnect(string signal, string? source = null)
+    public OnReadyConnect(string source, string signal)
     {
-        Signal = signal;
         Source = source;
+        Signal = signal;
     }
 
-    public string Signal;
-    public string? Source;
+    public readonly string Signal;
+    public readonly string Source;
 }
