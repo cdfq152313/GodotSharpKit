@@ -5,7 +5,6 @@ using Godot4Demo.Inner;
 
 namespace Godot4Demo;
 
-[OnReadyClass]
 public partial class LaunchScreen : Node2D
 {
     [Signal]
@@ -13,6 +12,8 @@ public partial class LaunchScreen : Node2D
 
     [OnReadyNode]
     private CustomNode _hello;
+
+    private Timer _timer = new();
 
     // Called when the node enters the scene tree for the first time.
     public override void _Ready()
@@ -25,6 +26,9 @@ public partial class LaunchScreen : Node2D
         new HelloGenerator();
         new HelloIncrementalGenerator();
     }
+
+    [OnReadyConnect(nameof(MySignal))]
+    private void OnMySignalTrigger() { }
 
     // Called every frame. 'delta' is the elapsed time since the previous frame.
     public override void _Process(double delta) { }

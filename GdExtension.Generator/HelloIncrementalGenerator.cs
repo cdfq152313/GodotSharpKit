@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Diagnostics;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -34,10 +35,7 @@ public class HelloIncrementalGenerator : IIncrementalGenerator
 
     private bool IsSyntaxTarget(SyntaxNode syntaxNode, CancellationToken cancellationToken)
     {
-        if (
-            syntaxNode is not ClassDeclarationSyntax classDeclarationSyntax
-            || classDeclarationSyntax.AttributeLists.Count == 0
-        )
+        if (syntaxNode is not ClassDeclarationSyntax classDeclarationSyntax)
         {
             return false;
         }
@@ -51,11 +49,13 @@ public class HelloIncrementalGenerator : IIncrementalGenerator
         foreach (var attribute in query)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (attribute.ToFullString() == nameof(OnReadyNode))
+            var attributeName = attribute.ToFullString();
+            if (attributeName == nameof(OnReadyNode) || attributeName == nameof(OnReadyConnect))
             {
                 return true;
             }
         }
+
         return false;
     }
 
@@ -69,28 +69,26 @@ public class HelloIncrementalGenerator : IIncrementalGenerator
         var query =
             from member in classSymbol.GetMembers()
             from attribute in member.GetAttributes()
-            where
-                attribute.AttributeClass.ContainingNamespace.Name == typeof(OnReadyNode).Namespace
-                && attribute.AttributeClass.Name == nameof(OnReadyNode)
-            select member;
-        var list = new List<GetNodeInfo>();
-        foreach (var member in query.OfType<IFieldSymbol>())
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            list.Add(
-                new GetNodeInfo(
-                    member.Name,
-                    member.Type.Name,
-                    member.Type.ContainingNamespace.ToDisplayString()
-                )
-            );
-        }
-
-        if (list.Count == 0)
+            where attribute.AttributeClass.ContainingNamespace.Name == typeof(OnReadyNode).Namespace
+            let attrInfo = attribute.AttributeClass.Name switch
+            {
+                nameof(OnReadyNode) when member is IFieldSymbol fieldSymbol
+                    => new NodeInfo(
+                        fieldSymbol.Name,
+                        fieldSymbol.Type.Name,
+                        fieldSymbol.Type.ContainingNamespace.Name
+                    ),
+                nameof(OnReadyConnect) when member is IMethodSymbol methodSymbol
+                    => new ConnectInfo(),
+                _ => new AttrInfo(),
+            }
+            group attrInfo by attrInfo.GetType();
+        var dict = query.ToDictionary(v => v.Key, v => v.ToList());
+        if (dict.Count == 0)
         {
             return null;
         }
-        return new RootInfo(classSymbol.ContainingNamespace.Name, classSymbol.Name, list);
+        return new RootInfo(classSymbol.ContainingNamespace.Name, classSymbol.Name, dict);
     }
 
     private void OnExecute(ImmutableArray<RootInfo> array, SourceProductionContext context)
@@ -100,12 +98,15 @@ public class HelloIncrementalGenerator : IIncrementalGenerator
             context.CancellationToken.ThrowIfCancellationRequested();
             var prefix = info.Namespace == "" ? "" : $"{info.Namespace}_";
             var namespaceStatement = info.Namespace == "" ? "" : $"namespace {info.Namespace};";
+            var nodeInfos = info.AttrInfoDict.ContainsKey(typeof(NodeInfo))
+                ? info.AttrInfoDict[typeof(NodeInfo)].OfType<NodeInfo>()
+                : new List<NodeInfo>();
             var readyStatement = string.Join(
                 "\n",
-                info.NodeInfos.Select(v =>
+                nodeInfos.Select(v =>
                 {
-                    var prefix = v.Namespace == "" ? "" : $"{v.Namespace}.";
-                    return $"{v.Name} = GetNode<{prefix}{v.Type}>(\"{v.Name}\");";
+                    var prefix = v.FieldTypeNamespace == "" ? "" : $"{v.FieldTypeNamespace}.";
+                    return $"{v.FieldName} = GetNode<{prefix}{v.FieldType}>(\"{v.FieldName}\");";
                 })
             );
             context.AddSource(
@@ -125,6 +126,10 @@ public partial class {info.ClassName}
     }
 }
 
-record RootInfo(string Namespace, string ClassName, List<GetNodeInfo> NodeInfos);
+record RootInfo(string Namespace, string ClassName, IDictionary<Type, List<AttrInfo>> AttrInfoDict);
 
-record GetNodeInfo(string Name, string Type, string Namespace);
+record AttrInfo;
+
+record NodeInfo(string FieldName, string FieldType, string FieldTypeNamespace) : AttrInfo;
+
+record ConnectInfo() : AttrInfo;
