@@ -69,29 +69,37 @@ public class HelloIncrementalGenerator : IIncrementalGenerator
             from attribute in member.GetAttributes()
             where
                 attribute.AttributeClass!.ContainingNamespace!.Name == typeof(OnReadyNode).Namespace
-            let actionInfo = attribute.AttributeClass!.Name switch
+            select new { member, attribute };
+        var dict = new Dictionary<Type, List<ActionInfo>>();
+        foreach (var data in query)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var actionInfo = data.attribute.AttributeClass!.Name switch
             {
-                nameof(OnReadyNode) when member is IFieldSymbol fieldSymbol
+                nameof(OnReadyNode) when data.member is IFieldSymbol fieldSymbol
                     => new GetInfo(
                         fieldSymbol.Name,
                         fieldSymbol.Type.Name,
                         fieldSymbol.Type.ContainingNamespace.Name
                     ),
-                nameof(OnReadyConnect) when member is IMethodSymbol methodSymbol
+                nameof(OnReadyConnect) when data.member is IMethodSymbol methodSymbol
                     => new ConnectInfo(
                         methodSymbol.Name,
-                        (string)attribute.ConstructorArguments[0].Value!,
-                        (string)attribute.ConstructorArguments[1].Value!
+                        (string)data.attribute.ConstructorArguments[0].Value!,
+                        (string)data.attribute.ConstructorArguments[1].Value!
                     ),
                 _ => new ActionInfo(),
+            };
+            if (!dict.ContainsKey(actionInfo.GetType()))
+            {
+                dict[actionInfo.GetType()] = new List<ActionInfo>();
             }
-            group actionInfo by actionInfo.GetType();
-        var dict = query.ToDictionary(v => v.Key, v => v.ToList());
+            dict[actionInfo.GetType()].Add(actionInfo);
+        }
         if (dict.Count == 0)
         {
             return null;
         }
-
         return new ClassInfo(classSymbol.ContainingNamespace.Name, classSymbol.Name, dict);
     }
 
