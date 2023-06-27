@@ -1,7 +1,5 @@
 using System.Collections.Immutable;
-using System.Diagnostics;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace GdExtension;
@@ -9,7 +7,7 @@ namespace GdExtension;
 [Generator(LanguageNames.CSharp)]
 public class HelloIncrementalGenerator : IIncrementalGenerator
 {
-    private Log Log;
+    private Log? Log;
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -69,8 +67,9 @@ public class HelloIncrementalGenerator : IIncrementalGenerator
         var query =
             from member in classSymbol.GetMembers()
             from attribute in member.GetAttributes()
-            where attribute.AttributeClass.ContainingNamespace.Name == typeof(OnReadyNode).Namespace
-            let attrInfo = attribute.AttributeClass.Name switch
+            where
+                attribute.AttributeClass!.ContainingNamespace!.Name == typeof(OnReadyNode).Namespace
+            let attrInfo = attribute.AttributeClass!.Name switch
             {
                 nameof(OnReadyNode) when member is IFieldSymbol fieldSymbol
                     => new NodeInfo(
@@ -88,6 +87,7 @@ public class HelloIncrementalGenerator : IIncrementalGenerator
         {
             return null;
         }
+
         return new RootInfo(classSymbol.ContainingNamespace.Name, classSymbol.Name, dict);
     }
 
