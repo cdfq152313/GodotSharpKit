@@ -5,13 +5,13 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace GdExtension;
 
 [Generator(LanguageNames.CSharp)]
-public class HelloIncrementalGenerator : IIncrementalGenerator
+public class OnReadyGenerator : IIncrementalGenerator
 {
     private Log? Log;
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        Log = new Log(context, nameof(HelloIncrementalGenerator));
+        Log = new Log(context, nameof(OnReadyGenerator));
         context.RegisterPostInitializationOutput(
             ctx =>
                 ctx.AddSource(
@@ -25,7 +25,7 @@ public class HelloIncrementalGenerator : IIncrementalGenerator
     private void Init(IncrementalGeneratorInitializationContext context)
     {
         var syntaxProvider = context.SyntaxProvider.ForAttributeWithMetadataName(
-            typeof(OnReady).FullName,
+            typeof(GdExtNode).FullName,
             IsSyntaxTarget,
             GetSyntaxTarget
         );

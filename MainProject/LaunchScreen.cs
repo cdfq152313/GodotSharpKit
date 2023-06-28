@@ -5,7 +5,7 @@ using Godot4Demo.Inner;
 
 namespace Godot4Demo;
 
-[OnReady]
+[GdExtNode]
 public partial class LaunchScreen : Node2D
 {
     [Signal]
