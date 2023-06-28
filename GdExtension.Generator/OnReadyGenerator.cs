@@ -7,11 +7,8 @@ namespace GdExtension;
 [Generator(LanguageNames.CSharp)]
 public class OnReadyGenerator : IIncrementalGenerator
 {
-    private Log? Log;
-
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        Log = new Log(context, nameof(OnReadyGenerator));
         context.RegisterPostInitializationOutput(
             ctx =>
                 ctx.AddSource(
