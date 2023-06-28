@@ -1,5 +1,8 @@
 ﻿namespace GdExtension;
 
+[AttributeUsage(AttributeTargets.Class)]
+public class OnReady : Attribute { }
+
 [AttributeUsage(AttributeTargets.Field)]
 public class OnReadyNode : Attribute { }
 

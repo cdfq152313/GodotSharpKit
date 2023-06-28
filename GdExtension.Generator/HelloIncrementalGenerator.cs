@@ -24,46 +24,25 @@ public class HelloIncrementalGenerator : IIncrementalGenerator
 
     private void Init(IncrementalGeneratorInitializationContext context)
     {
-        var syntaxProvider = context.SyntaxProvider
-            .CreateSyntaxProvider(IsSyntaxTarget, GetSyntaxTarget)
-            .Where(v => v is not null)
-            .Select((s, _) => s!);
+        var syntaxProvider = context.SyntaxProvider.ForAttributeWithMetadataName(
+            typeof(OnReady).FullName,
+            IsSyntaxTarget,
+            GetSyntaxTarget
+        );
         context.RegisterSourceOutput(syntaxProvider.Collect(), (c, s) => OnExecute(s, c));
     }
 
     private bool IsSyntaxTarget(SyntaxNode syntaxNode, CancellationToken cancellationToken)
     {
-        if (syntaxNode is not ClassDeclarationSyntax classDeclarationSyntax)
-        {
-            return false;
-        }
-
-        var query =
-            from member in classDeclarationSyntax.Members
-            from attributeList in member.AttributeLists
-            from attribute in attributeList.Attributes
-            select attribute;
-
-        foreach (var attribute in query)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            var attributeName = attribute.ToFullString();
-            if (attributeName == nameof(OnReadyNode) || attributeName == nameof(OnReadyConnect))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return syntaxNode is ClassDeclarationSyntax;
     }
 
-    private ClassInfo? GetSyntaxTarget(
-        GeneratorSyntaxContext context,
+    private ClassInfo GetSyntaxTarget(
+        GeneratorAttributeSyntaxContext context,
         CancellationToken cancellationToken
     )
     {
-        var model = context.SemanticModel;
-        var classSymbol = (ITypeSymbol)model.GetDeclaredSymbol(context.Node)!;
+        var classSymbol = (ITypeSymbol)context.TargetSymbol;
         var query =
             from member in classSymbol.GetMembers()
             from attribute in member.GetAttributes()
@@ -95,10 +74,6 @@ public class HelloIncrementalGenerator : IIncrementalGenerator
                 dict[actionInfo.GetType()] = new List<ActionInfo>();
             }
             dict[actionInfo.GetType()].Add(actionInfo);
-        }
-        if (dict.Count == 0)
-        {
-            return null;
         }
         return new ClassInfo(classSymbol.ContainingNamespace.Name, classSymbol.Name, dict);
     }
