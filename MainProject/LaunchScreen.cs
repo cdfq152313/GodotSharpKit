@@ -12,7 +12,10 @@ public partial class LaunchScreen : Node2D
     public delegate void MySignalEventHandler();
 
     [OnReadyNode]
-    private CustomNode _hello;
+    private CustomNode _node1;
+
+    [OnReadyNode("haha")]
+    private Node _node2;
 
     private Timer _timer = new();
 

@@ -59,6 +59,7 @@ public class HelloIncrementalGenerator : IIncrementalGenerator
                     => new GetInfo(
                         fieldSymbol.Name,
                         fieldSymbol.Type.Name,
+                        data.attribute.ConstructorArguments[0].Value as string,
                         fieldSymbol.Type.ContainingNamespace.Name
                     ),
                 nameof(OnReadyConnect) when data.member is IMethodSymbol methodSymbol
@@ -91,7 +92,7 @@ public class HelloIncrementalGenerator : IIncrementalGenerator
                 "\n        ",
                 getInfos.Select(
                     v =>
-                        $"{v.FieldName} = GetNode<{(v.FieldTypeNamespace == "" ? "" : $"{v.FieldTypeNamespace}.")}{v.FieldType}>(\"{v.GodotName}\");"
+                        $"{v.FieldName} = GetNode<{(v.FieldTypeNamespace == "" ? "" : $"{v.FieldTypeNamespace}.")}{v.FieldType}>(\"{v.FieldPath}\");"
                 )
             );
             var connectInfos = info.ActionInfoDict
@@ -130,12 +131,14 @@ record ClassInfo(
 
 record ActionInfo;
 
-record GetInfo(string FieldName, string FieldType, string FieldTypeNamespace) : ActionInfo
+record GetInfo(string FieldName, string FieldType, string? _fieldPath, string FieldTypeNamespace)
+    : ActionInfo
 {
-    public string GodotName =>
+    public string FieldPath => _fieldPath ?? _uniqueName;
+    private string _uniqueName =>
         FieldName.StartsWith("_")
-            ? FieldName[1].ToString().ToUpper() + FieldName.Substring(2)
-            : FieldName;
+            ? $"%{FieldName[1].ToString().ToUpper()}{FieldName.Substring(2)}"
+            : $"%{FieldName}";
 }
 
 record ConnectInfo(string MethodName, string Source, string Signal) : ActionInfo;
