@@ -4,10 +4,13 @@
         <EnableDynamicLoading>true</EnableDynamicLoading>
     </PropertyGroup>
     <ItemGroup>
-        <Content Include="RiderTestRunner\NetCoreRunner.tscn" />
+        <Content Include="RiderTestRunner\NetCoreRunner.tscn"/>
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\GdExtension\GdExtension.csproj" />
-        <ProjectReference Include="..\GdExtension.Generator\GdExtension.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <ProjectReference Include="..\GdExtension\GdExtension.csproj"/>
+        <ProjectReference Include="..\GdExtension.Generator\GdExtension.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
+    </ItemGroup>
+    <ItemGroup>
+        <AdditionalFiles Include="*.config.json"/>
     </ItemGroup>
 </Project>

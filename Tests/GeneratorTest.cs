@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Collections.Immutable;
+using System.Reflection;
 using GdExtension;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -22,28 +23,34 @@ public class GeneratorTest
     }
 
     [Test]
-    public void DebugGenerator()
+    public void DebugOnReadyGenerator()
     {
         var root = GetRootPath();
         var cs = File.ReadAllText(Path.Join(root, "MainProject", "LaunchScreen.cs"));
         Compilation inputCompilation = CreateCompilation(cs);
         var generator = new OnReadyGenerator();
+        CSharpGeneratorDriver.Create(generator).RunGenerators(inputCompilation);
+    }
 
-        // Create the driver that will control the generation, passing in our generator
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
-
-        // Run the generation pass
-        // (Note: the generator driver itself is immutable, and all calls return an updated version of the driver that you should use for subsequent calls)
-        driver = driver.RunGeneratorsAndUpdateCompilation(
-            inputCompilation,
-            out var outputCompilation,
-            out var diagnostics
+    [Test]
+    public void DebugResourceGenerator()
+    {
+        var root = GetRootPath();
+        var cs = File.ReadAllText(Path.Join(root, "MainProject", "LaunchScreen.cs"));
+        var configContent = File.ReadAllText(
+            Path.Join(root, "MainProject", "gdExtension.config.json")
         );
-        var runResult = driver.GetRunResult();
-        foreach (var result in runResult.Results)
-        {
-            Assert.That(result.Exception, Is.Null);
-        }
+        Compilation inputCompilation = CreateCompilation(cs);
+
+        var generator = new ResourceGenerator();
+        CSharpGeneratorDriver
+            .Create(generator)
+            .AddAdditionalTexts(
+                ImmutableArray.Create<AdditionalText>(
+                    new InMemoryAdditionalText("gdExtension.config.json", configContent)
+                )
+            )
+            .RunGenerators(inputCompilation);
     }
 
     private static Compilation CreateCompilation(string source) =>
@@ -53,7 +60,6 @@ public class GeneratorTest
             new[]
             {
                 MetadataReference.CreateFromFile(typeof(Binder).GetTypeInfo().Assembly.Location)
-            },
-            new CSharpCompilationOptions(OutputKind.ConsoleApplication)
+            }
         );
 }

@@ -9,24 +9,12 @@ public class OnReadyGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        context.RegisterPostInitializationOutput(
-            ctx =>
-                ctx.AddSource(
-                    "HelloIncrementalGenerator.g.cs",
-                    "public class HelloIncrementalGenerator{}"
-                )
-        );
-        Init(context);
-    }
-
-    private void Init(IncrementalGeneratorInitializationContext context)
-    {
         var syntaxProvider = context.SyntaxProvider.ForAttributeWithMetadataName(
-            typeof(GdExtNode).FullName,
+            typeof(GdExtNode).FullName!,
             IsSyntaxTarget,
             GetSyntaxTarget
         );
-        context.RegisterSourceOutput(syntaxProvider.Collect(), (c, s) => OnExecute(s, c));
+        context.RegisterSourceOutput(syntaxProvider.Collect(), OnExecute);
     }
 
     private bool IsSyntaxTarget(SyntaxNode syntaxNode, CancellationToken cancellationToken)
@@ -76,7 +64,7 @@ public class OnReadyGenerator : IIncrementalGenerator
         return new ClassInfo(classSymbol.ContainingNamespace.Name, classSymbol.Name, dict);
     }
 
-    private void OnExecute(ImmutableArray<ClassInfo> array, SourceProductionContext context)
+    private void OnExecute(SourceProductionContext context, ImmutableArray<ClassInfo> array)
     {
         foreach (var info in array)
         {

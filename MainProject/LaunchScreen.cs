@@ -27,8 +27,7 @@ public partial class LaunchScreen : Node2D
         MySignal += () => GD.Print("Hello!");
         EmitSignal(SignalName.MySignal);
         Console.WriteLine(typeof(OnReadyNode).FullName);
-        new HelloGenerator();
-        new HelloIncrementalGenerator();
+        new HelloResourceGenerator();
     }
 
     [OnReadyConnect("", nameof(MySignal))]
