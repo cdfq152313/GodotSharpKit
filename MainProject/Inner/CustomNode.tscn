@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://kduh2c6omygn"]
+
+[ext_resource type="Script" path="res://Inner/CustomNode.cs" id="1_iw7qu"]
+
+[node name="CustomNode" type="Node2D"]
+script = ExtResource("1_iw7qu")
