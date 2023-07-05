@@ -2,7 +2,7 @@ using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace GdExtension;
+namespace GdExtension.Generator;
 
 [Generator(LanguageNames.CSharp)]
 public class OnReadyGenerator : IIncrementalGenerator

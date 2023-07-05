@@ -3,7 +3,7 @@ using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace GdExtension;
+namespace GdExtension.Generator;
 
 [Generator(LanguageNames.CSharp)]
 public class ResourceGenerator : IIncrementalGenerator

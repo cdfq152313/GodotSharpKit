@@ -1,4 +1,4 @@
-﻿namespace GdExtension;
+﻿namespace GdExtension.Generator;
 
 public static class Util
 {
