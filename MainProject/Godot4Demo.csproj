@@ -4,16 +4,18 @@
         <EnableDynamicLoading>true</EnableDynamicLoading>
     </PropertyGroup>
     <ItemGroup>
-        <Content Include="RiderTestRunner\NetCoreRunner.tscn"/>
+        <Content Include="RiderTestRunner\NetCoreRunner.tscn" />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\GdExtension\GdExtension.csproj"/>
-        <ProjectReference Include="..\GdExtension.Generator\GdExtension.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
+        <ProjectReference Include="..\GdExtension\GdExtension.csproj" />
+        <ProjectReference Include="..\GdExtension.Generator\GdExtension.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
     <ItemGroup>
-        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Container"/>
-        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Class"/>
-        <AdditionalFiles Include="*.tscn"/>
-        <AdditionalFiles Include="inner\*.tscn" Container="A" Class="PackedScene"/>
+        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Container" />
+        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Class" />
+        <AdditionalFiles Include="*.tscn" />
+        <AdditionalFiles Include="Inner\*.tscn" Container="A" Class="PackedScene" />
+        <AdditionalFiles Include="Deep\Deep2\*.tscn" Container="A" Class="PackedScene" />
+        <AdditionalFiles Include="icon.svg" Container="Image" />
     </ItemGroup>
 </Project>

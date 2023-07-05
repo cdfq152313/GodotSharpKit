@@ -3,6 +3,8 @@ using System.Reflection;
 using GdExtension;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Diagnostics;
+using Moq;
 
 namespace Tests;
 
@@ -36,19 +38,25 @@ public class GeneratorTest
     public void DebugResourceGenerator()
     {
         var root = GetRootPath();
-        var cs = File.ReadAllText(Path.Join(root, "MainProject", "LaunchScreen.cs"));
-        var configContent = File.ReadAllText(
-            Path.Join(root, "MainProject", "gdExtension.config.json")
-        );
+        var mainProjectPath = Path.Join(root, "MainProject");
+        var cs = File.ReadAllText(Path.Join(mainProjectPath, "LaunchScreen.cs"));
+        var path = Path.Join(mainProjectPath, "Inner", "CustomNode.tscn");
+        var content = File.ReadAllText(path);
         Compilation inputCompilation = CreateCompilation(cs);
-
         var generator = new ResourceGenerator();
+        var mockOptions = new Mock<AnalyzerConfigOptionsProvider>();
+        var empty = "";
+        mockOptions.Setup(
+            v => v.GlobalOptions.TryGetValue("build_property.projectdir", out mainProjectPath)
+        );
+        mockOptions.Setup(
+            v => v.GetOptions(It.IsAny<AdditionalText>()).TryGetValue(It.IsAny<string>(), out empty)
+        );
         CSharpGeneratorDriver
             .Create(generator)
+            .WithUpdatedAnalyzerConfigOptions(mockOptions.Object)
             .AddAdditionalTexts(
-                ImmutableArray.Create<AdditionalText>(
-                    new InMemoryAdditionalText("gdExtension.config.json", configContent)
-                )
+                ImmutableArray.Create<AdditionalText>(new InMemoryAdditionalText(path, content))
             )
             .RunGenerators(inputCompilation);
     }
