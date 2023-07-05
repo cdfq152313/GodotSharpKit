@@ -1,18 +1,19 @@
 <Project Sdk="Godot.NET.Sdk/4.0.2">
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <EnableDynamicLoading>true</EnableDynamicLoading>
-  </PropertyGroup>
-  <ItemGroup>
-    <Content Include="RiderTestRunner\NetCoreRunner.tscn" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\GdExtension\GdExtension.csproj" />
-    <ProjectReference Include="..\GdExtension.Generator\GdExtension.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-  </ItemGroup>
-  <ItemGroup>
-    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Container" />
-    <AdditionalFiles Include="*.tscn" Container="A" />
-    <AdditionalFiles Include="inner\*.tscn" Container="B" />
-  </ItemGroup>
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <EnableDynamicLoading>true</EnableDynamicLoading>
+    </PropertyGroup>
+    <ItemGroup>
+        <Content Include="RiderTestRunner\NetCoreRunner.tscn"/>
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\GdExtension\GdExtension.csproj"/>
+        <ProjectReference Include="..\GdExtension.Generator\GdExtension.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
+    </ItemGroup>
+    <ItemGroup>
+        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Container"/>
+        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Class"/>
+        <AdditionalFiles Include="*.tscn"/>
+        <AdditionalFiles Include="inner\*.tscn" Container="A" Class="PackedScene"/>
+    </ItemGroup>
 </Project>

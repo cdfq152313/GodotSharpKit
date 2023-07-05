@@ -9,15 +9,15 @@
         <RootNamespace>GdExtension</RootNamespace>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.1" PrivateAssets="all"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.1" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\GdExtension\GdExtension.csproj" GeneratePathProperty="true" PrivateAssets="all"/>
+        <ProjectReference Include="..\GdExtension\GdExtension.csproj" GeneratePathProperty="true" PrivateAssets="all" />
     </ItemGroup>
     <ItemGroup>
-        <None Include="$(OutputPath)\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
-        <None Include="GdExtension.Generator.props" Pack="true" PackagePath="build" Visible="false"/>
+        <None Include="$(OutputPath)\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+        <None Include="GdExtension.Generator.props" Pack="true" PackagePath="build" Visible="false" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -26,7 +26,7 @@
 
     <Target Name="GetDependencyTargetPaths">
         <ItemGroup>
-            <TargetPathWithTargetPlatformMoniker Include="..\GdExtension\$(OutputPath)\*.dll" IncludeRuntimeDependency="false"/>
+            <TargetPathWithTargetPlatformMoniker Include="..\GdExtension\$(OutputPath)\*.dll" IncludeRuntimeDependency="false" />
         </ItemGroup>
     </Target>
 </Project>

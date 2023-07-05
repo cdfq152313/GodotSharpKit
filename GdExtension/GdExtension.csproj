@@ -10,4 +10,8 @@
         <RootNamespace>GdExtension</RootNamespace>
     </PropertyGroup>
 
+    <ItemGroup>
+      <PackageReference Include="GodotSharp" Version="4.*" />
+    </ItemGroup>
+
 </Project>
