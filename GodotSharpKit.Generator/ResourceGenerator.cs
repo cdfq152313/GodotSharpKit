@@ -15,7 +15,14 @@ public class ResourceGenerator : IIncrementalGenerator
             .Combine(configProvider)
             .Select(ResTransform)
             .Collect();
-        context.RegisterSourceOutput(resProvider, GenerateCode);
+        var rootNamespace = configProvider.Select(
+            (v, c) =>
+            {
+                v.GlobalOptions.TryGetValue("build_property.RootNamespace", out var rootNamespace);
+                return string.IsNullOrEmpty(rootNamespace) ? "" : $"\nnamespace {rootNamespace};";
+            }
+        );
+        context.RegisterSourceOutput(resProvider.Combine(rootNamespace), GenerateCode);
     }
 
     private ResourceInfo ResTransform(
@@ -25,10 +32,6 @@ public class ResourceGenerator : IIncrementalGenerator
     {
         var (additionalText, optionsProvider) = valueTuple;
         optionsProvider.GlobalOptions.TryGetValue("build_property.projectdir", out var root);
-        optionsProvider.GlobalOptions.TryGetValue(
-            "build_property.RootNamespace",
-            out var rootNamespace
-        );
         optionsProvider
             .GetOptions(additionalText)
             .TryGetValue("build_metadata.AdditionalFiles.Container", out var container);
@@ -42,20 +45,10 @@ public class ResourceGenerator : IIncrementalGenerator
         var csPath = Path.ChangeExtension(gdPath, ".cs");
         var name = Path.GetFileNameWithoutExtension(originPath);
 
-        string SceneType()
-        {
-            var list = new List<string>();
-            if (!string.IsNullOrEmpty(rootNamespace))
-            {
-                list.Add(rootNamespace);
-            }
-
-            list.AddRange(relativePath.Replace(".tscn", "").Split("/"));
-            return string.Join(".", list);
-        }
         var type = resourceType switch
         {
-            "PackedScene" when content.Contains(csPath) => $"SceneRes<{SceneType()}>",
+            "PackedScene" when content.Contains(csPath)
+                => $"SceneRes<{string.Join(".", relativePath.Replace(".tscn", "").Split("/"))}>",
             "PackedScene" => "SceneRes<Node>",
             _ => $"Res<{(string.IsNullOrEmpty(resourceType) ? "Resource" : resourceType)}>",
         };
@@ -67,11 +60,15 @@ public class ResourceGenerator : IIncrementalGenerator
         );
     }
 
-    private void GenerateCode(SourceProductionContext context, ImmutableArray<ResourceInfo> array)
+    private void GenerateCode(
+        SourceProductionContext context,
+        (ImmutableArray<ResourceInfo> Left, string Right) valueTuple
+    )
     {
+        var (resourceInfos, namespaceStatement) = valueTuple;
         var indent = "    ";
         var dict = new Dictionary<string, StringBuilder>();
-        foreach (var info in array)
+        foreach (var info in resourceInfos)
         {
             context.CancellationToken.ThrowIfCancellationRequested();
             if (!dict.ContainsKey(info.Container))
@@ -94,9 +91,9 @@ public class ResourceGenerator : IIncrementalGenerator
 
         context.AddSource(
             "AutoRes.g.cs",
-            @$"
-using GodotSharpKit;
+            @$"using GodotSharpKit;
 using Godot;
+{namespaceStatement}
 
 {string.Join("", dict.Select(v => v.Value))}
 "

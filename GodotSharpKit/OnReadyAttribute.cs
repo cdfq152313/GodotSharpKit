@@ -39,7 +39,4 @@ public class OnReady : Attribute
 }
 
 [AttributeUsage(AttributeTargets.Method)]
-public class OnReadyLast : Attribute
-{
-    public OnReadyLast() { }
-}
+public class OnReadyLast : Attribute { }
