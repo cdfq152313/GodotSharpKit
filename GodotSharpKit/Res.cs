@@ -1,6 +1,6 @@
 ﻿using Godot;
 
-namespace GdExtension;
+namespace GodotSharpKit;
 
 public class Res<T> where T : class
 {

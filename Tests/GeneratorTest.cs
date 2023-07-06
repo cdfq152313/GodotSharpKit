@@ -1,7 +1,6 @@
 ﻿using System.Collections.Immutable;
 using System.Reflection;
-using GdExtension;
-using GdExtension.Generator;
+using GodotSharpKit.Generator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -17,7 +16,7 @@ public class GeneratorTest
     private string GetRootPath()
     {
         var dir = Environment.CurrentDirectory;
-        while (!Directory.Exists(Path.Join(dir, "GdExtension")))
+        while (!Directory.Exists(Path.Join(dir, "GodotSharpKit")))
         {
             dir = Directory.GetParent(dir)!.FullName;
         }

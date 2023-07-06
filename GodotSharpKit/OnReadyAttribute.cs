@@ -1,4 +1,4 @@
-﻿namespace GdExtension;
+﻿namespace GodotSharpKit;
 
 [AttributeUsage(AttributeTargets.Class)]
 public class GdExtNode : Attribute { }

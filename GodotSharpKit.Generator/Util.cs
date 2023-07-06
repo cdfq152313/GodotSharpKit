@@ -1,4 +1,4 @@
-﻿namespace GdExtension.Generator;
+﻿namespace GodotSharpKit.Generator;
 
 public static class Util
 {

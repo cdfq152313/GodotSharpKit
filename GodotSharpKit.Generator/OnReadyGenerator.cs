@@ -2,7 +2,7 @@ using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace GdExtension.Generator;
+namespace GodotSharpKit.Generator;
 
 [Generator(LanguageNames.CSharp)]
 public class OnReadyGenerator : IIncrementalGenerator
@@ -24,7 +24,7 @@ public class OnReadyGenerator : IIncrementalGenerator
         return syntaxNode is ClassDeclarationSyntax;
     }
 
-    private ClassInfo GetSyntaxTarget(
+    private Root GetSyntaxTarget(
         GeneratorAttributeSyntaxContext context,
         CancellationToken cancellationToken
     )
@@ -36,40 +36,41 @@ public class OnReadyGenerator : IIncrementalGenerator
             where
                 attribute.AttributeClass!.ContainingNamespace!.Name == typeof(OnReadyNode).Namespace
             select new { member, attribute };
-        var actionList = new List<ActionInfo>();
+        var actionList = new List<OnReadyAction>();
         foreach (var data in query)
         {
             cancellationToken.ThrowIfCancellationRequested();
             var actionInfo = data.attribute.AttributeClass!.Name switch
             {
                 nameof(OnReadyNode) when data.member is IFieldSymbol fieldSymbol
-                    => new GetInfo(
+                    => new GetNode(
                         fieldSymbol.Name,
                         fieldSymbol.Type.Name,
                         data.attribute.ConstructorArguments[0].Value as string,
                         fieldSymbol.Type.ContainingNamespace.Name
                     ),
                 nameof(OnReadyConnect) when data.member is IMethodSymbol methodSymbol
-                    => new ConnectInfo(
+                    => new Connect(
                         methodSymbol.Name,
                         (string)data.attribute.ConstructorArguments[0].Value!,
                         (string)data.attribute.ConstructorArguments[1].Value!
                     ),
                 nameof(OnReady) when data.member is IMethodSymbol methodSymbol
-                    => new MethodInfo(
+                    => new Run(
                         methodSymbol.Name,
                         (int)data.attribute.ConstructorArguments[0].Value!
                     ),
                 nameof(OnReadyLast) when data.member is IMethodSymbol methodSymbol
-                    => new MethodInfoLast(methodSymbol.Name),
-                _ => new ActionInfo(),
+                    => new LastRun(methodSymbol.Name),
+                _ => new OnReadyAction(),
             };
             actionList.Add(actionInfo);
         }
-        return new ClassInfo(classSymbol.ContainingNamespace.Name, classSymbol.Name, actionList);
+
+        return new Root(classSymbol.ContainingNamespace.Name, classSymbol.Name, actionList);
     }
 
-    private void OnExecute(SourceProductionContext context, ImmutableArray<ClassInfo> array)
+    private void OnExecute(SourceProductionContext context, ImmutableArray<Root> array)
     {
         foreach (var info in array)
         {
@@ -78,7 +79,7 @@ public class OnReadyGenerator : IIncrementalGenerator
             var getNodeStatement = string.Join(
                 "\n        ",
                 info.ActionList
-                    .OfType<GetInfo>()
+                    .OfType<GetNode>()
                     .Select(
                         v =>
                             $"{v.FieldName} = GetNode<{(v.FieldTypeNamespace == "" ? "" : $"{v.FieldTypeNamespace}.")}{v.FieldType}>(\"{v.FieldPath}\");"
@@ -87,23 +88,23 @@ public class OnReadyGenerator : IIncrementalGenerator
             var connectSignalStatement = string.Join(
                 "\n        ",
                 info.ActionList
-                    .OfType<ConnectInfo>()
+                    .OfType<Connect>()
                     .Select(
                         v =>
                             $"{(v.Source.Length == 0 ? "" : $"{v.Source}.")}{v.Signal} += {v.MethodName};"
                     )
             );
 
-            var methodInfo = string.Join(
+            var runStatement = string.Join(
                 "\n        ",
                 info.ActionList
-                    .OfType<MethodInfo>()
+                    .OfType<Run>()
                     .OrderBy(v => v.Order)
                     .Select(v => $"{v.MethodName}();")
             );
-            var methodInfoLast = string.Join(
+            var lastRunStatement = string.Join(
                 "\n        ",
-                info.ActionList.OfType<MethodInfoLast>().Select(v => $"{v.MethodName}();")
+                info.ActionList.OfType<LastRun>().Select(v => $"{v.MethodName}();")
             );
 
             context.AddSource(
@@ -117,8 +118,8 @@ public partial class {info.ClassName}
         base._Ready();
         {getNodeStatement}
         {connectSignalStatement}
-        {methodInfo}
-        {methodInfoLast}
+        {runStatement}
+        {lastRunStatement}
     }} 
 }}
 "
@@ -126,33 +127,34 @@ public partial class {info.ClassName}
         }
     }
 
-    record ClassInfo(string Namespace, string ClassName, List<ActionInfo> ActionList);
+    record Root(string Namespace, string ClassName, List<OnReadyAction> ActionList);
 
-    record ActionInfo;
+    record OnReadyAction;
 
-    record GetInfo(
+    record GetNode(
         string FieldName,
         string FieldType,
         string? _fieldPath,
         string FieldTypeNamespace
-    ) : ActionInfo
+    ) : OnReadyAction
     {
         public string FieldPath => _fieldPath ?? _uniqueName;
+
         private string _uniqueName =>
             FieldName.StartsWith("_")
                 ? $"%{FieldName[1].ToString().ToUpper()}{FieldName.Substring(2)}"
                 : $"%{FieldName}";
     }
 
-    record ConnectInfo(string MethodName, string Source, string Signal) : ActionInfo;
+    record Connect(string MethodName, string Source, string Signal) : OnReadyAction;
 
-    record MethodInfo(string MethodName, int Order) : ActionInfo;
+    record Run(string MethodName, int Order) : OnReadyAction;
 
-    record MethodInfoLast(string MethodName) : ActionInfo;
+    record LastRun(string MethodName) : OnReadyAction;
 
-    class RootEqual : IEqualityComparer<ClassInfo>
+    class RootEqual : IEqualityComparer<Root>
     {
-        public bool Equals(ClassInfo? x, ClassInfo? y)
+        public bool Equals(Root? x, Root? y)
         {
             if (ReferenceEquals(x, y))
                 return true;
@@ -167,7 +169,7 @@ public partial class {info.ClassName}
                 && x.ActionList.SequenceEqual(y.ActionList);
         }
 
-        public int GetHashCode(ClassInfo obj)
+        public int GetHashCode(Root obj)
         {
             return HashCode.Combine(
                 obj.Namespace,

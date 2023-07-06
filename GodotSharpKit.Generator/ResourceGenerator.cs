@@ -3,7 +3,7 @@ using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace GdExtension.Generator;
+namespace GodotSharpKit.Generator;
 
 [Generator(LanguageNames.CSharp)]
 public class ResourceGenerator : IIncrementalGenerator
@@ -95,13 +95,13 @@ public class ResourceGenerator : IIncrementalGenerator
         context.AddSource(
             "AutoRes.g.cs",
             @$"
-using GdExtension;
+using GodotSharpKit;
 using Godot;
 
 {string.Join("", dict.Select(v => v.Value))}
 "
         );
     }
-}
 
-record ResourceInfo(string Name, string GdPath, string Container, string Type);
+    record ResourceInfo(string Name, string GdPath, string Container, string Type);
+}
