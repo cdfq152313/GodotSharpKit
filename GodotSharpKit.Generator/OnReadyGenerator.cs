@@ -11,7 +11,7 @@ public class OnReadyGenerator : IIncrementalGenerator
     {
         var syntaxProvider = context.SyntaxProvider
             .ForAttributeWithMetadataName(
-                typeof(GdExtNode).FullName!,
+                typeof(OnReady).FullName!,
                 IsSyntaxTarget,
                 GetSyntaxTarget
             )
@@ -34,7 +34,7 @@ public class OnReadyGenerator : IIncrementalGenerator
             from member in classSymbol.GetMembers()
             from attribute in member.GetAttributes()
             where
-                attribute.AttributeClass!.ContainingNamespace!.Name == typeof(OnReadyNode).Namespace
+                attribute.AttributeClass!.ContainingNamespace!.Name == typeof(OnReadyGet).Namespace
             select new { member, attribute };
         var actionList = new List<OnReadyAction>();
         foreach (var data in query)
@@ -42,8 +42,8 @@ public class OnReadyGenerator : IIncrementalGenerator
             cancellationToken.ThrowIfCancellationRequested();
             var actionInfo = data.attribute.AttributeClass!.Name switch
             {
-                nameof(OnReadyNode) when data.member is IFieldSymbol fieldSymbol
-                    => new GetNode(
+                nameof(OnReadyGet) when data.member is IFieldSymbol fieldSymbol
+                    => new Get(
                         fieldSymbol.Name,
                         fieldSymbol.Type.Name,
                         data.attribute.ConstructorArguments[0].Value as string,
@@ -55,12 +55,12 @@ public class OnReadyGenerator : IIncrementalGenerator
                         (string)data.attribute.ConstructorArguments[0].Value!,
                         (string)data.attribute.ConstructorArguments[1].Value!
                     ),
-                nameof(OnReady) when data.member is IMethodSymbol methodSymbol
+                nameof(OnReadyRun) when data.member is IMethodSymbol methodSymbol
                     => new Run(
                         methodSymbol.Name,
                         (int)data.attribute.ConstructorArguments[0].Value!
                     ),
-                nameof(OnReadyLast) when data.member is IMethodSymbol methodSymbol
+                nameof(OnReadyLastRun) when data.member is IMethodSymbol methodSymbol
                     => new LastRun(methodSymbol.Name),
                 _ => new OnReadyAction(),
             };
@@ -79,7 +79,7 @@ public class OnReadyGenerator : IIncrementalGenerator
             var getNodeStatement = string.Join(
                 "\n        ",
                 info.ActionList
-                    .OfType<GetNode>()
+                    .OfType<Get>()
                     .Select(
                         v =>
                             $"{v.FieldName} = GetNode<{(v.FieldTypeNamespace == "" ? "" : $"{v.FieldTypeNamespace}.")}{v.FieldType}>(\"{v.FieldPath}\");"
@@ -131,12 +131,8 @@ public partial class {info.ClassName}
 
     record OnReadyAction;
 
-    record GetNode(
-        string FieldName,
-        string FieldType,
-        string? _fieldPath,
-        string FieldTypeNamespace
-    ) : OnReadyAction
+    record Get(string FieldName, string FieldType, string? _fieldPath, string FieldTypeNamespace)
+        : OnReadyAction
     {
         public string FieldPath => _fieldPath ?? _uniqueName;
 

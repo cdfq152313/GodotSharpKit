@@ -5,26 +5,26 @@ using Godot4Demo.Inner;
 
 namespace Godot4Demo;
 
-[GdExtNode]
+[OnReady]
 public partial class LaunchScreen : Node2D
 {
     [Signal]
     public delegate void MySignalEventHandler();
 
-    [OnReadyNode]
+    [OnReadyGet]
     private CustomNode _node1;
 
-    [OnReadyNode("haha")]
+    [OnReadyGet("haha")]
     private Node _node2;
 
     private Timer _timer = new();
 
-    [OnReadyLast]
+    [OnReadyLastRun]
     private void PostReady()
     {
         MySignal += () => GD.Print("Hello!");
         EmitSignal(SignalName.MySignal);
-        Console.WriteLine(typeof(OnReadyNode).FullName);
+        Console.WriteLine(typeof(OnReadyGet).FullName);
     }
 
     [OnReadyConnect("", nameof(MySignal))]
@@ -33,13 +33,13 @@ public partial class LaunchScreen : Node2D
     [OnReadyConnect(nameof(_timer), nameof(Timer.Timeout))]
     private void OnTimeout() { }
 
-    [OnReady(2)]
+    [OnReadyRun(2)]
     private void Run2()
     {
         GD.Print("Two!");
     }
 
-    [OnReady(1)]
+    [OnReadyRun(1)]
     private void Run1()
     {
         GD.Print("One!");

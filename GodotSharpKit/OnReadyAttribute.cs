@@ -1,12 +1,12 @@
 ﻿namespace GodotSharpKit;
 
 [AttributeUsage(AttributeTargets.Class)]
-public class GdExtNode : Attribute { }
+public class OnReady : Attribute { }
 
 [AttributeUsage(AttributeTargets.Field)]
-public class OnReadyNode : Attribute
+public class OnReadyGet : Attribute
 {
-    public OnReadyNode(string? path = null)
+    public OnReadyGet(string? path = null)
     {
         Path = path;
     }
@@ -28,9 +28,9 @@ public class OnReadyConnect : Attribute
 }
 
 [AttributeUsage(AttributeTargets.Method)]
-public class OnReady : Attribute
+public class OnReadyRun : Attribute
 {
-    public OnReady(int order = 0)
+    public OnReadyRun(int order = 0)
     {
         Order = order;
     }
@@ -39,4 +39,4 @@ public class OnReady : Attribute
 }
 
 [AttributeUsage(AttributeTargets.Method)]
-public class OnReadyLast : Attribute { }
+public class OnReadyLastRun : Attribute { }
