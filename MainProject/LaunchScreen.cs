@@ -19,11 +19,9 @@ public partial class LaunchScreen : Node2D
 
     private Timer _timer = new();
 
-    // Called when the node enters the scene tree for the first time.
-    public override void _Ready()
+    [OnReadyLast]
+    private void PostReady()
     {
-        OnReady();
-        GD.Print("Hello Ready!");
         MySignal += () => GD.Print("Hello!");
         EmitSignal(SignalName.MySignal);
         Console.WriteLine(typeof(OnReadyNode).FullName);
@@ -34,6 +32,18 @@ public partial class LaunchScreen : Node2D
 
     [OnReadyConnect(nameof(_timer), nameof(Timer.Timeout))]
     private void OnTimeout() { }
+
+    [OnReady(2)]
+    private void Run2()
+    {
+        GD.Print("Two!");
+    }
+
+    [OnReady(1)]
+    private void Run1()
+    {
+        GD.Print("One!");
+    }
 
     // Called every frame. 'delta' is the elapsed time since the previous frame.
     public override void _Process(double delta) { }

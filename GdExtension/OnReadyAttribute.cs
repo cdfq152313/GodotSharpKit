@@ -26,3 +26,20 @@ public class OnReadyConnect : Attribute
     public readonly string Signal;
     public readonly string Source;
 }
+
+[AttributeUsage(AttributeTargets.Method)]
+public class OnReady : Attribute
+{
+    public OnReady(int order = 0)
+    {
+        Order = order;
+    }
+
+    public readonly int Order;
+}
+
+[AttributeUsage(AttributeTargets.Method)]
+public class OnReadyLast : Attribute
+{
+    public OnReadyLast() { }
+}
