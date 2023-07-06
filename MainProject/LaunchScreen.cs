@@ -12,15 +12,15 @@ public partial class LaunchScreen : Node2D
     public delegate void MySignalEventHandler();
 
     [OnReadyGet]
-    private CustomNode _node1;
+    private CustomNode _node1 = null!;
 
     [OnReadyGet("haha")]
-    private Node _node2;
+    private Node _node2 = null!;
 
     private Timer _timer = new();
 
     [OnReadyLastRun]
-    private void PostReady()
+    private void OnReady()
     {
         MySignal += () => GD.Print("Hello!");
         EmitSignal(SignalName.MySignal);
