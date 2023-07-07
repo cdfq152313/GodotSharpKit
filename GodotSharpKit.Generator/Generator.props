@@ -1,5 +1,6 @@
 ﻿<Project>
     <ItemGroup>
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Container" />
+        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Type" />
     </ItemGroup>
 </Project>

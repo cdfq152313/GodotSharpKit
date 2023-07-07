@@ -18,8 +18,5 @@ public class SceneRes<T> : Res<PackedScene> where T : Node
 {
     public SceneRes(string path) : base(path) { }
 
-    public TypedPackedScene<T> Pack()
-    {
-        return new TypedPackedScene<T>(Load());
-    }
+    public SceneFactory<T> Factory => new(Load());
 }

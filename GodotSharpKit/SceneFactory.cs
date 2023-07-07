@@ -2,9 +2,9 @@
 
 namespace GodotSharpKit;
 
-public class TypedPackedScene<T> where T : Node
+public class SceneFactory<T> where T : Node
 {
-    public TypedPackedScene(PackedScene packedScene)
+    public SceneFactory(PackedScene packedScene)
     {
         PackedScene = packedScene;
     }

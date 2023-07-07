@@ -14,10 +14,10 @@
     </ItemGroup>
     <ItemGroup>
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Container" />
-        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Class" />
+        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Type" />
         <AdditionalFiles Include="*.tscn" />
-        <AdditionalFiles Include="Inner\*.tscn" Container="A" Class="PackedScene" />
-        <AdditionalFiles Include="Deep\Deep2\*.tscn" Container="A" Class="PackedScene" />
+        <AdditionalFiles Include="Inner\*.tscn" Container="A" Type="PackedScene" />
+        <AdditionalFiles Include="Deep\Deep2\*.tscn" Container="A" Type="PackedScene" />
         <AdditionalFiles Include="icon.svg" Container="Image" />
     </ItemGroup>
 </Project>

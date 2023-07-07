@@ -37,7 +37,7 @@ public class ResourceGenerator : IIncrementalGenerator
             .TryGetValue("build_metadata.AdditionalFiles.Container", out var container);
         optionsProvider
             .GetOptions(additionalText)
-            .TryGetValue("build_metadata.AdditionalFiles.Class", out var resourceType);
+            .TryGetValue("build_metadata.AdditionalFiles.Type", out var resourceType);
         var originPath = additionalText.Path;
         var content = additionalText.GetText(cancellationToken)?.ToString() ?? "";
         var relativePath = Path.GetRelativePath(root!, originPath).Replace("\\", "/");
