@@ -167,11 +167,11 @@ public partial class {info.ClassName}
 
         public int GetHashCode(Root obj)
         {
-            return HashCode.Combine(
+            return (
                 obj.Namespace,
                 obj.ClassName,
                 obj.ActionList.GetSequenceHashCode()
-            );
+            ).GetHashCode();
         }
     }
 }

@@ -40,7 +40,7 @@ public class ResourceGenerator : IIncrementalGenerator
             .TryGetValue("build_metadata.AdditionalFiles.Type", out var resourceType);
         var originPath = additionalText.Path;
         var content = additionalText.GetText(cancellationToken)?.ToString() ?? "";
-        var relativePath = Path.GetRelativePath(root!, originPath).Replace("\\", "/");
+        var relativePath = originPath.Replace(root!, "").Replace("\\", "/");
         var gdPath = $"res://{relativePath}";
         var csPath = Path.ChangeExtension(gdPath, ".cs");
         var name = Path.GetFileNameWithoutExtension(originPath);
@@ -48,14 +48,14 @@ public class ResourceGenerator : IIncrementalGenerator
         var type = resourceType switch
         {
             "PackedScene" when content.Contains(csPath)
-                => $"SceneRes<{string.Join(".", relativePath.Replace(".tscn", "").Split("/"))}>",
+                => $"SceneRes<{string.Join(".", relativePath.Replace(".tscn", "").Split('/'))}>",
             "PackedScene" => "SceneRes<Node>",
             _ => $"Res<{(string.IsNullOrEmpty(resourceType) ? "Resource" : resourceType)}>",
         };
         return new ResourceInfo(
             name,
             gdPath!,
-            string.IsNullOrEmpty(container) ? "AutoRes" : container,
+            string.IsNullOrEmpty(container) ? "AutoRes" : container!,
             type
         );
     }
@@ -79,7 +79,7 @@ public class ResourceGenerator : IIncrementalGenerator
             }
 
             dict[info.Container].AppendLine(
-                $"{indent}public static {info.Type} {info.Name} = new(\"{info.GdPath}\");"
+                $"{indent}public static readonly {info.Type} {info.Name} = new(\"{info.GdPath}\");"
             );
         }
 

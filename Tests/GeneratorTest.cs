@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using System.Reflection;
+using GodotSharpKit;
 using GodotSharpKit.Generator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -67,7 +68,7 @@ public class GeneratorTest
             new[] { CSharpSyntaxTree.ParseText(source) },
             new[]
             {
-                MetadataReference.CreateFromFile(typeof(Binder).GetTypeInfo().Assembly.Location)
+                MetadataReference.CreateFromFile(typeof(Binder).GetTypeInfo().Assembly.Location),
             }
         );
 }

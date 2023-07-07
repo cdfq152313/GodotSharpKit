@@ -7,26 +7,36 @@
         <TargetFramework>net6.0</TargetFramework>
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <RootNamespace>GodotSharpKit.Generator</RootNamespace>
+        <Version>0.0.4</Version>
+        <Title>GodotSharpKit.Generator</Title>
+        <Authors>Denny Cheng</Authors>
+        <Description>A toolkit that automates resource file management and generates the OnReady function for enhanced development efficiency in Godot and C# projects.</Description>
+        <PackageProjectUrl>https://github.com/cdfq152313/GodotSharpKit</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/cdfq152313/GodotSharpKit</RepositoryUrl>
+        <PackageTags>Godot;Generator</PackageTags>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.1" PrivateAssets="all" />
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
-    </ItemGroup>
-    <ItemGroup>
-        <ProjectReference Include="..\GodotSharpKit\GodotSharpKit.csproj" GeneratePathProperty="true" PrivateAssets="all" />
+        <PackageReference Include="GodotSharpKit" Version="0.0.4" PrivateAssets="all" GeneratePathProperty="true" />
     </ItemGroup>
     <ItemGroup>
         <None Include="$(OutputPath)\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
         <None Include="Generator.props" Pack="true" PackagePath="build" Visible="false" />
+        <None Include="$(PKGGodotSharpKit)\lib\net6.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     </ItemGroup>
 
-    <PropertyGroup>
-        <GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
-    </PropertyGroup>
-
-    <Target Name="GetDependencyTargetPaths">
-        <ItemGroup>
-            <TargetPathWithTargetPlatformMoniker Include="..\GodotSharpKit\$(OutputPath)\*.dll" IncludeRuntimeDependency="false" />
-        </ItemGroup>
-    </Target>
+    <!-- Local Development-->
+<!--    <ItemGroup>-->
+<!--        <ProjectReference Include="..\GodotSharpKit\GodotSharpKit.csproj" GeneratePathProperty="true" PrivateAssets="all" />-->
+<!--    </ItemGroup>-->
+<!--    <PropertyGroup>-->
+<!--        <GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>-->
+<!--    </PropertyGroup>-->
+<!--    <Target Name="GetDependencyTargetPaths">-->
+<!--        <ItemGroup>-->
+<!--            <None Include="$(PKGGodotSharpKit)\lib\net6.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />-->
+<!--            <TargetPathWithTargetPlatformMoniker Include="..\GodotSharpKit\$(OutputPath)\*.dll" IncludeRuntimeDependency="false" />-->
+<!--        </ItemGroup>-->
+<!--    </Target>-->
 </Project>

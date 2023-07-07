@@ -6,12 +6,18 @@
         <Nullable>enable</Nullable>
         <WarningsAsErrors>Nullable</WarningsAsErrors>
         <TargetFramework>net6.0</TargetFramework>
-        <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <RootNamespace>GodotSharpKit</RootNamespace>
+        <Version>0.0.4</Version>
+        <Title>GodotSharpKit</Title>
+        <Authors>Denny Cheng</Authors>
+        <Description>A toolkit that automates resource file management and generates the OnReady function for enhanced development efficiency in Godot and C# projects.</Description>
+        <PackageProjectUrl>https://github.com/cdfq152313/GodotSharpKit</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/cdfq152313/GodotSharpKit</RepositoryUrl>
+        <PackageTags>Godot;Generator</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="GodotSharp" Version="4.*" />
+      <PackageReference Include="GodotSharp" Version="4.0.0" />
     </ItemGroup>
 
 </Project>
