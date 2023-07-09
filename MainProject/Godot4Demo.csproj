@@ -9,8 +9,8 @@
         <Content Include="RiderTestRunner\NetCoreRunner.tscn"/>
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="GodotSharpKit" Version="0.0.4"/>
-        <PackageReference Include="GodotSharpKit.Generator" Version="0.0.4" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all"/>
+        <PackageReference Include="GodotSharpKit" Version="1.0.0"/>
+        <PackageReference Include="GodotSharpKit.Generator" Version="1.0.0" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all"/>
     </ItemGroup>
     <!--   Local Development -->
     <!--    <ItemGroup>-->
@@ -18,8 +18,6 @@
     <!--        <ProjectReference Include="..\GodotSharpKit.Generator\GodotSharpKit.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />-->
     <!--    </ItemGroup>-->
     <ItemGroup>
-        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Container"/>
-        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Type"/>
         <AdditionalFiles Include="*.tscn"/>
         <AdditionalFiles Include="Inner\*.tscn" Container="A" Type="PackedScene"/>
         <AdditionalFiles Include="Deep\Deep2\*.tscn" Container="A" Type="PackedScene"/>
