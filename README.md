@@ -6,8 +6,8 @@ In your .csproj file, add
 
 ```xml
 <ItemGroup>
-    <PackageReference Include="GodotSharpKit" Version="0.0.4"/>
-    <PackageReference Include="GodotSharpKit.Generator" Version="0.0.4" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all"/>
+    <PackageReference Include="GodotSharpKit" Version="1.0.0"/>
+    <PackageReference Include="GodotSharpKit.Generator" Version="1.0.0" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all"/>
 </ItemGroup>
 ```
 
