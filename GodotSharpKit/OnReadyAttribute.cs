@@ -37,6 +37,3 @@ public class OnReadyRun : Attribute
 
     public readonly int Order;
 }
-
-[AttributeUsage(AttributeTargets.Method)]
-public class OnReadyLastRun : Attribute { }

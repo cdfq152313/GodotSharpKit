@@ -19,9 +19,10 @@ public partial class LaunchScreen : Node2D
 
     private Timer _timer = new();
 
-    [OnReadyLastRun]
-    private void OnReady()
+    public override void _Ready()
     {
+        base._Ready();
+        OnReady();
         MySignal += () => GD.Print("Hello!");
         EmitSignal(SignalName.MySignal);
         Console.WriteLine(typeof(OnReadyGet).FullName);
@@ -44,7 +45,4 @@ public partial class LaunchScreen : Node2D
     {
         GD.Print("One!");
     }
-
-    // Called every frame. 'delta' is the elapsed time since the previous frame.
-    public override void _Process(double delta) { }
 }

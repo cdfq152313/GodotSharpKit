@@ -60,8 +60,6 @@ public class OnReadyGenerator : IIncrementalGenerator
                         methodSymbol.Name,
                         (int)data.attribute.ConstructorArguments[0].Value!
                     ),
-                nameof(OnReadyLastRun) when data.member is IMethodSymbol methodSymbol
-                    => new LastRun(methodSymbol.Name),
                 _ => new OnReadyAction(),
             };
             actionList.Add(actionInfo);
@@ -102,10 +100,6 @@ public class OnReadyGenerator : IIncrementalGenerator
                     .OrderBy(v => v.Order)
                     .Select(v => $"{v.MethodName}();")
             );
-            var lastRunStatement = string.Join(
-                "\n        ",
-                info.ActionList.OfType<LastRun>().Select(v => $"{v.MethodName}();")
-            );
 
             context.AddSource(
                 $"{(info.Namespace == "" ? "" : $"{info.Namespace.Replace(".", "_")}_")}{info.ClassName}.g.cs",
@@ -113,13 +107,11 @@ public class OnReadyGenerator : IIncrementalGenerator
 
 public partial class {info.ClassName} 
 {{ 
-    public override void _Ready()
+    private void OnReady()
     {{
-        base._Ready();
         {getNodeStatement}
         {connectSignalStatement}
         {runStatement}
-        {lastRunStatement}
     }} 
 }}
 "
@@ -145,8 +137,6 @@ public partial class {info.ClassName}
     record Connect(string MethodName, string Source, string Signal) : OnReadyAction;
 
     record Run(string MethodName, int Order) : OnReadyAction;
-
-    record LastRun(string MethodName) : OnReadyAction;
 
     class RootEqual : IEqualityComparer<Root>
     {
