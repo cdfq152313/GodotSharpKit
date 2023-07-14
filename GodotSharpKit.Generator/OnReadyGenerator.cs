@@ -47,7 +47,7 @@ public class OnReadyGenerator : IIncrementalGenerator
                         fieldSymbol.Name,
                         fieldSymbol.Type.Name,
                         data.attribute.ConstructorArguments[0].Value as string,
-                        fieldSymbol.Type.ContainingNamespace.Name
+                        fieldSymbol.Type.ContainingNamespace.FullName()
                     ),
                 nameof(OnReadyConnect) when data.member is IMethodSymbol methodSymbol
                     => new Connect(
@@ -67,7 +67,7 @@ public class OnReadyGenerator : IIncrementalGenerator
             actionList.Add(actionInfo);
         }
 
-        return new Root(classSymbol.ContainingNamespace.Name, classSymbol.Name, actionList);
+        return new Root(classSymbol.ContainingNamespace.FullName(), classSymbol.Name, actionList);
     }
 
     private void OnExecute(SourceProductionContext context, ImmutableArray<Root> array)

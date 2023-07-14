@@ -41,4 +41,17 @@ public static class Util
             );
         }
     }
+
+    public static string FullName(this INamespaceSymbol namespaceSymbol)
+    {
+        var list = new List<string>();
+        while (!string.IsNullOrEmpty(namespaceSymbol.Name))
+        {
+            list.Add(namespaceSymbol.Name);
+            namespaceSymbol = namespaceSymbol.ContainingNamespace;
+        }
+
+        list.Reverse();
+        return string.Join('.', list);
+    }
 }
