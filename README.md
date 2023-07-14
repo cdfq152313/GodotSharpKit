@@ -6,8 +6,8 @@ In your .csproj file, add
 
 ```xml
 <ItemGroup>
-    <PackageReference Include="GodotSharpKit" Version="1.0.0"/>
-    <PackageReference Include="GodotSharpKit.Generator" Version="1.0.0" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all"/>
+    <PackageReference Include="GodotSharpKit" Version="1.1.0"/>
+    <PackageReference Include="GodotSharpKit.Generator" Version="1.1.0" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all"/>
 </ItemGroup>
 ```
 
@@ -31,17 +31,31 @@ Will generate
 ```csharp
 public partial class LaunchScreen 
 { 
-    public override void _Ready()
+    private void OnReady()
     {
-        base._Ready();
     } 
 }
 ```
 
 
+You can write
+```csharp
+[OnReady]
+public partial class LaunchScreen : Node2D
+{ 
+    public override void _Ready()
+    {
+        base._Ready();
+        this.OnReady();
+    }
+}
+
+```
+
+
 ## OnReadyGet
 
-This attribute is used to mark a field that will be initialized with a reference to a Node or a derived type during the _Ready() method.
+This attribute is used to mark a field that will be initialized with a reference to a Node or a derived type during the OnReady() method.
 
 ### Use Case 1: Default Unique Path
 
@@ -82,7 +96,7 @@ _node3 = GetNode<Godot.Node>("haha");
 
 ## OnReadyConnect:
 
-This attribute is used to mark a method that will be connected to a signal during the _Ready() method.
+This attribute is used to mark a method that will be connected to a signal during the OnReady() method.
 The generated code will connect the method to the specified signal and handle its invocation when the signal is emitted.
 
 - It provides two parameters: the first parameter is the node that emits the signal, and the second parameter is the name of the signal.
@@ -105,7 +119,7 @@ _timer.Timeout += OnTimeout;
 
 ## OnReadyRun:
 
-This attribute is used to mark a method that will be called in a specific order during the _Ready() method.
+This attribute is used to mark a method that will be called in a specific order during the OnReady() method.
 The generated code will invoke these methods in ascending order based on the specified priority.
 
 Given
@@ -121,25 +135,6 @@ Run1();
 Run2();
 ```
 
-## OnReadyLastRun:
-
-This attribute is used to mark a method that will be called at the end of the _Ready() method.
-The generated code will invoke this method, providing an opportunity to perform additional setup or initialization tasks.
-
-Given
-```csharp
-[OnReadyLastRun] private void OnReady() { /* method body */ } 
-```
-
-Will generate
-```csharp
-public override void _Ready()
-{
-    base._Ready();
-    /* other generated code */
-    OnReady();
-} 
-```
 
 ## Full example
 ```csharp
@@ -164,8 +159,11 @@ public partial class LaunchScreen : Node2D
 
     private Timer _timer = new();
 
-    [OnReadyLastRun]
-    private void OnReady() { }
+    public override void _Ready()
+    {
+        base._Ready();
+        this.OnReady();
+    }
 
     [OnReadyConnect("", nameof(MySignal))]
     private void OnMySignal() { }
@@ -188,16 +186,14 @@ namespace Godot4Demo;
 
 public partial class LaunchScreen 
 { 
-    public override void _Ready()
+    private void OnReady()
     {
-        base._Ready();
         _node1 = GetNode<Inner.CustomNode>("%Node1");
         _node2 = GetNode<Godot.Node>("haha");
         MySignal += OnMySignal;
         _timer.Timeout += OnTimeout;
         Run1();
         Run2();
-        OnReady();
     } 
 }
 ```
