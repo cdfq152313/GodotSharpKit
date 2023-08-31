@@ -42,7 +42,7 @@ public static class Util
         }
     }
 
-    public static string FullName(this INamespaceSymbol namespaceSymbol)
+    public static string FullName(this ISymbol namespaceSymbol)
     {
         var list = new List<string>();
         while (!string.IsNullOrEmpty(namespaceSymbol.Name))
@@ -53,5 +53,10 @@ public static class Util
 
         list.Reverse();
         return string.Join('.', list);
+    }
+
+    public static string ConcatDot(this string a, string b)
+    {
+        return a.Length > 0 ? $"{a}.{b}" : b;
     }
 }

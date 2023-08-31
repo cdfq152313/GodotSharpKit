@@ -11,6 +11,9 @@ public partial class LaunchScreen : Node2D
     [Signal]
     public delegate void MySignalEventHandler();
 
+    [Signal]
+    public delegate void MySignalParamEventHandler(int a, Node b);
+
     [OnReadyGet]
     private CustomNode _node1 = null!;
 
@@ -24,8 +27,9 @@ public partial class LaunchScreen : Node2D
         base._Ready();
         OnReady();
         MySignal += () => GD.Print("Hello!");
-        EmitSignal(SignalName.MySignal);
         Console.WriteLine(typeof(OnReadyGet).FullName);
+        EmitMySignalParam(1, new Node());
+        EmitMySignal();
     }
 
     [OnReadyConnect("", nameof(MySignal))]

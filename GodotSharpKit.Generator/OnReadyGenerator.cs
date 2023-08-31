@@ -102,7 +102,7 @@ public class OnReadyGenerator : IIncrementalGenerator
             );
 
             context.AddSource(
-                $"{(info.Namespace == "" ? "" : $"{info.Namespace.Replace(".", "_")}_")}{info.ClassName}.g.cs",
+                $"{info.Namespace.ConcatDot(info.ClassName).Replace(".", "_")}.g.cs",
                 @$"{namespaceStatement}
 
 public partial class {info.ClassName} 
