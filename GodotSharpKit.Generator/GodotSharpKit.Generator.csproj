@@ -7,7 +7,7 @@
         <TargetFramework>net6.0</TargetFramework>
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <RootNamespace>GodotSharpKit.Generator</RootNamespace>
-        <Version>1.2.0</Version>
+        <Version>1.2.1</Version>
         <Title>GodotSharpKit.Generator</Title>
         <Authors>Denny Cheng</Authors>
         <Description>A toolkit that automates resource file management and generates the OnReady function for enhanced development efficiency in Godot and C# projects.</Description>
@@ -18,7 +18,7 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.1" PrivateAssets="all" />
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
-        <PackageReference Include="GodotSharpKit" Version="1.2.0" PrivateAssets="all" GeneratePathProperty="true" />
+        <PackageReference Include="GodotSharpKit" Version="1.2.1" PrivateAssets="all" GeneratePathProperty="true" />
     </ItemGroup>
     <ItemGroup>
         <None Include="$(OutputPath)\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
