@@ -9,11 +9,9 @@ public class SignalGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        var syntaxProvider = context.SyntaxProvider.ForAttributeWithMetadataName(
-            "Godot.SignalAttribute",
-            IsSyntaxTarget,
-            GetSyntaxTarget
-        );
+        var syntaxProvider = context.SyntaxProvider
+            .ForAttributeWithMetadataName("Godot.SignalAttribute", IsSyntaxTarget, GetSyntaxTarget)
+            .WithComparer(new DelegateEqual());
         context.RegisterSourceOutput(syntaxProvider.Collect(), OnExecute);
     }
 
@@ -35,6 +33,7 @@ public class SignalGenerator : IIncrementalGenerator
             var typeSymbol = context.SemanticModel.GetSymbolInfo(p.Type!).Symbol!;
             signalParams.Add(new ParamInfo(typeSymbol.FullName(), p.Identifier.Text));
         }
+
         return new DelegateInfo(
             context.TargetSymbol.ContainingNamespace.FullName(),
             context.TargetSymbol.ContainingType.Name,
@@ -63,8 +62,42 @@ public partial class {info.ClassName}
     {{
         EmitSignal(SignalName.{info.SignalName}{passParam});
     }} 
+
+    public Godot.SignalAwaiter ToSignal{info.SignalName}(Godot.GodotObject user)
+    {{
+        return user.ToSignal(this, SignalName.{info.SignalName});
+    }} 
 }}
 "
+            );
+        }
+    }
+
+    class DelegateEqual : IEqualityComparer<DelegateInfo>
+    {
+        public bool Equals(DelegateInfo? x, DelegateInfo? y)
+        {
+            if (ReferenceEquals(x, y))
+                return true;
+            if (ReferenceEquals(x, null))
+                return false;
+            if (ReferenceEquals(y, null))
+                return false;
+            if (x.GetType() != y.GetType())
+                return false;
+            return x.Namespace == y.Namespace
+                && x.ClassName == y.ClassName
+                && x.SignalName == y.SignalName
+                && x.SignalParams.SequenceEqual(y.SignalParams);
+        }
+
+        public int GetHashCode(DelegateInfo obj)
+        {
+            return HashCode.Combine(
+                obj.Namespace,
+                obj.ClassName,
+                obj.SignalName,
+                obj.SignalParams.GetSequenceHashCode()
             );
         }
     }
