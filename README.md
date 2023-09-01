@@ -1,13 +1,19 @@
 ﻿# Introduction
-GodotSharpKit is a toolkit that automates resource file management and generates the OnReady function for enhanced development efficiency in Godot and C# projects. With GodotSharpKit, you can say goodbye to manual resource file handling and tedious function creation. This handy package streamlines your workflow by automatically generating resource file locations and providing ready-to-use OnReady functions, allowing you to focus more on coding and less on repetitive tasks.
+GodotSharpKit offers three powerful generators to enhance your Godot game development:
+
+1. OnReady Generator: Simplifies node initialization with automatically generated OnReady functions.
+
+2. Resource Generator: Automates resource file management, generating code to access resources in specific directories. Customize class names and specify resource types for efficient resource handling.
+
+3. Signal Generator: Streamlines signal emission by automatically generating EmitSignal functions based on delegate definitions. This ensures correct parameter types and error-free signal handling in your Godot and C# projects.
 
 # Installation
 In your .csproj file, add
 
 ```xml
 <ItemGroup>
-    <PackageReference Include="GodotSharpKit" Version="1.1.0"/>
-    <PackageReference Include="GodotSharpKit.Generator" Version="1.1.0" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all"/>
+    <PackageReference Include="GodotSharpKit" Version="1.2.0"/>
+    <PackageReference Include="GodotSharpKit.Generator" Version="1.2.0" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all"/>
 </ItemGroup>
 ```
 
@@ -341,3 +347,32 @@ For example, if you have a DeepNode.tscn file, the corresponding DeepNode.cs fil
 
 The CS file (DeepNode.cs in the example) should adhere to the C# namespace convention.
 If the CS file's path is Deep\Deep2\CustomNode.cs, and the root namespace is Godot4Demo, the namespace for CustomNode should be Godot4Demo.Deep.Deep2.
+
+# Signal Generator
+The Signal Generator is a powerful tool that simplifies the process of emitting signals in Godot and C# projects. It is designed to generate EmitSignal functions with the correct parameters, making signal handling more efficient and error-free.
+
+Given
+```csharp
+using Godot;
+
+namespace Godot4Demo;
+
+public partial class LaunchScreen : Node2D
+{
+    [Signal]
+    public delegate void MySignalParamEventHandler(int a, Node b);
+
+}
+```
+
+Will generate
+```csharp
+namespace Godot4Demo;
+public partial class LaunchScreen 
+{ 
+    public void EmitMySignalParam(System.Int32 a,Godot.Node b)
+    {
+        EmitSignal(SignalName.MySignalParam,a,b);
+    } 
+}
+```
