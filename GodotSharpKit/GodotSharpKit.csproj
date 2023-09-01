@@ -7,7 +7,7 @@
         <WarningsAsErrors>Nullable</WarningsAsErrors>
         <TargetFramework>net6.0</TargetFramework>
         <RootNamespace>GodotSharpKit</RootNamespace>
-        <Version>1.1.0</Version>
+        <Version>1.2.0</Version>
         <Title>GodotSharpKit</Title>
         <Authors>Denny Cheng</Authors>
         <Description>A toolkit that automates resource file management and generates the OnReady function for enhanced development efficiency in Godot and C# projects.</Description>
