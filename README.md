@@ -349,7 +349,11 @@ The CS file (DeepNode.cs in the example) should adhere to the C# namespace conve
 If the CS file's path is Deep\Deep2\CustomNode.cs, and the root namespace is Godot4Demo, the namespace for CustomNode should be Godot4Demo.Deep.Deep2.
 
 # Signal Generator
-The Signal Generator is a powerful tool that simplifies the process of emitting signals in Godot and C# projects. It is designed to generate EmitSignal functions with the correct parameters, making signal handling more efficient and error-free.
+The Signal Generator in GodotSharpKit automatically creates two essential components:
+
+1. EmitSignal Function: It generates functions like EmitMySignalParam that emit signals with correct parameters. Ensures type-safe and accurate signal emission.
+
+2. SignalAwaiter Function: Functions like ToSignalMySignal are generated for easy asynchronous signal handling.
 
 Given
 ```csharp
@@ -374,5 +378,11 @@ public partial class LaunchScreen
     {
         EmitSignal(SignalName.MySignalParam,a,b);
     } 
+
+    public Godot.SignalAwaiter ToSignalMySignal(Godot.GodotObject user)
+    {
+        return user.ToSignal(this, SignalName.MySignal);
+    } 
+
 }
 ```

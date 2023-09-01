@@ -30,6 +30,7 @@ public partial class LaunchScreen : Node2D
         Console.WriteLine(typeof(OnReadyGet).FullName);
         EmitMySignalParam(1, new Node());
         EmitMySignal();
+        var awaiter = ToSignalMySignal(this);
     }
 
     [OnReadyConnect("", nameof(MySignal))]
