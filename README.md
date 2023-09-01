@@ -379,10 +379,9 @@ public partial class LaunchScreen
         EmitSignal(SignalName.MySignalParam,a,b);
     } 
 
-    public Godot.SignalAwaiter ToSignalMySignal(Godot.GodotObject user)
+    public Godot.SignalAwaiter ToSignalMySignalParam(Godot.GodotObject user)
     {
-        return user.ToSignal(this, SignalName.MySignal);
+        return user.ToSignal(this, SignalName.MySignalParam);
     } 
-
 }
 ```
