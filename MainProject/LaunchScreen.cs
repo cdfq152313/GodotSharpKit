@@ -8,11 +8,16 @@ namespace Godot4Demo;
 [OnReady]
 public partial class LaunchScreen : Node2D
 {
+    public class MyGeneric<T> { }
+
     [Signal]
     public delegate void MySignalEventHandler();
 
     [Signal]
     public delegate void MySignalParamEventHandler(int a, Node b);
+
+    [Signal]
+    public delegate void MySignalParamWithGenericEventHandler(MyGeneric<int> x);
 
     [OnReadyGet]
     private CustomNode _node1 = null!;
@@ -30,6 +35,7 @@ public partial class LaunchScreen : Node2D
         Console.WriteLine(typeof(OnReadyGet).FullName);
         EmitMySignalParam(1, new Node());
         EmitMySignal();
+        EmitMySignalParamWithGeneric(new MyGeneric<int>());
         var awaiter = ToSignalMySignalParam(this);
     }
 

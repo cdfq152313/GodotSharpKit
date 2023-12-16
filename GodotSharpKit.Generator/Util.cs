@@ -47,8 +47,16 @@ public static class Util
         var list = new List<string>();
         while (!string.IsNullOrEmpty(namespaceSymbol.Name))
         {
-            list.Add(namespaceSymbol.Name);
-            namespaceSymbol = namespaceSymbol.ContainingNamespace;
+            if (namespaceSymbol is INamedTypeSymbol { IsGenericType: true } nType)
+            {
+                var generic = string.Join(',', nType.TypeArguments.Select(v => v.FullName()));
+                list.Add($"{namespaceSymbol.Name}<{generic}>");
+            }
+            else
+            {
+                list.Add(namespaceSymbol.Name);
+            }
+            namespaceSymbol = namespaceSymbol.ContainingSymbol;
         }
 
         list.Reverse();
