@@ -9,8 +9,8 @@
         <Content Include="RiderTestRunner\NetCoreRunner.tscn"/>
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="GodotSharpKit" Version="1.2.1"/>
-        <PackageReference Include="GodotSharpKit.Generator" Version="1.2.1" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all"/>
+        <PackageReference Include="GodotSharpKit" Version="1.2.2"/>
+        <PackageReference Include="GodotSharpKit.Generator" Version="1.2.2" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all"/>
     </ItemGroup>
     <!--   Local Development -->
     <!--    <ItemGroup>-->
