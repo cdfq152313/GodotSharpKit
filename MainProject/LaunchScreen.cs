@@ -8,7 +8,7 @@ namespace Godot4Demo;
 [OnReady]
 public partial class LaunchScreen : Node2D
 {
-    public class MyGeneric<T> { }
+    public partial class MyGeneric<T> : RefCounted { }
 
     [Signal]
     public delegate void MySignalEventHandler();
