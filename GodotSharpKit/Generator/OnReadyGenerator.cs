@@ -34,13 +34,18 @@ public class OnReadyGenerator : IIncrementalGenerator
         var query =
             from member in classSymbol.GetMembers()
             from attribute in member.GetAttributes()
-            where
-                attribute.AttributeClass!.ContainingNamespace!.Name == typeof(OnReadyGet).Namespace
             select new { member, attribute };
         var actionList = new List<OnReadyAction>();
         foreach (var data in query)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            if (
+                data.attribute.AttributeClass!.ContainingNamespace!.FullName()
+                != typeof(OnReadyGet).Namespace
+            )
+            {
+                continue;
+            }
             var actionInfo = data.attribute.AttributeClass!.Name switch
             {
                 nameof(OnReadyGet) when data.member is IFieldSymbol fieldSymbol
