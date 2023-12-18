@@ -16,6 +16,7 @@
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <IncludeBuildOutput>false</IncludeBuildOutput>
         <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageReleaseNotes>https://github.com/cdfq152313/GodotSharpKit/blob/master/CHANGELOG.md</PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>
