@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <WarningsAsErrors>Nullable</WarningsAsErrors>
+        <TargetFramework>net6.0</TargetFramework>
+        <RootNamespace>GodotSharpKit.Misc</RootNamespace>
+        <Title>GodotSharpKit.Misc</Title>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="GodotSharp" Version="4.0.0" />
+    </ItemGroup>
+</Project>

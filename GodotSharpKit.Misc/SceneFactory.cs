@@ -1,6 +1,6 @@
 ﻿using Godot;
 
-namespace GodotSharpKit;
+namespace GodotSharpKit.Misc;
 
 public class SceneFactory<T> where T : Node
 {

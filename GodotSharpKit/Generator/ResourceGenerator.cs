@@ -91,7 +91,7 @@ public class ResourceGenerator : IIncrementalGenerator
 
         context.AddSource(
             "AutoRes.g.cs",
-            @$"using GodotSharpKit;
+            @$"using GodotSharpKit.Misc;
 using Godot;
 {namespaceStatement}
 

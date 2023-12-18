@@ -1,4 +1,4 @@
-﻿namespace GodotSharpKit;
+﻿namespace GodotSharpKit.Misc;
 
 [AttributeUsage(AttributeTargets.Class)]
 public class OnReady : Attribute { }

@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
     <PropertyGroup>
         <LangVersion>10</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -7,17 +6,30 @@
         <WarningsAsErrors>Nullable</WarningsAsErrors>
         <TargetFramework>net6.0</TargetFramework>
         <RootNamespace>GodotSharpKit</RootNamespace>
-        <Version>1.2.2</Version>
+        <Version>1.2.7</Version>
         <Title>GodotSharpKit</Title>
         <Authors>Denny Cheng</Authors>
         <Description>A toolkit that automates resource file management and generates the OnReady function for enhanced development efficiency in Godot and C# projects.</Description>
         <PackageProjectUrl>https://github.com/cdfq152313/GodotSharpKit</PackageProjectUrl>
         <RepositoryUrl>https://github.com/cdfq152313/GodotSharpKit</RepositoryUrl>
         <PackageTags>Godot;Generator</PackageTags>
+        <IncludeBuildOutput>false</IncludeBuildOutput>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="GodotSharp" Version="4.0.0" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.1" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <ProjectReference Include="..\GodotSharpKit.Misc\GodotSharpKit.Misc.csproj" PrivateAssets="all"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+        <None Include="$(OutputPath)\GodotSharpKit.Misc.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+        <None Include="$(OutputPath)\GodotSharpKit.Misc.dll" Pack="true" PackagePath="lib\net6.0" Visible="true"/>
+        <None Include="GodotSharpKit.props" Pack="true" PackagePath="build" Visible="false"/>
+        <!--        <None Include="$(PKGGodotSharpKit)\lib\net6.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>-->
+    </ItemGroup>
 </Project>

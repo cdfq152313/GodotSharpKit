@@ -1,7 +1,7 @@
 ﻿using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 
-namespace GodotSharpKit.Generator;
+namespace GodotSharpKit;
 
 public static class Util
 {

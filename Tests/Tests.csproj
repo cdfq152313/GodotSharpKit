@@ -29,7 +29,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\GodotSharpKit.Generator\GodotSharpKit.Generator.csproj" />
+      <ProjectReference Include="..\GodotSharpKit\GodotSharpKit.csproj" />
       <ProjectReference Include="..\MainProject\Godot4Demo.csproj" />
     </ItemGroup>
 
