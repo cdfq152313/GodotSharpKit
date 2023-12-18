@@ -12,8 +12,7 @@ In your .csproj file, add
 
 ```xml
 <ItemGroup>
-    <PackageReference Include="GodotSharpKit" Version="1.2.0"/>
-    <PackageReference Include="GodotSharpKit.Generator" Version="1.2.0" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all"/>
+    <PackageReference Include="GodotSharpKit" Version="2.0.0"/>
 </ItemGroup>
 ```
 
