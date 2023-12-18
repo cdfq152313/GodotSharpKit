@@ -13,9 +13,10 @@
     </ItemGroup>
     <!--   Local Development -->
     <!--    <ItemGroup>-->
-    <!--        <ProjectReference Include="..\GodotSharpKit\GodotSharpKit.csproj" />-->
-    <!--        <ProjectReference Include="..\GodotSharpKit.Generator\GodotSharpKit.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />-->
+    <!--        <ProjectReference Include="..\GodotSharpKit\GodotSharpKit.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>-->
+    <!--        <ProjectReference Include="..\GodotSharpKit.Misc\GodotSharpKit.Misc.csproj"/>-->
     <!--    </ItemGroup>-->
+
     <ItemGroup>
         <AdditionalFiles Include="*.tscn"/>
         <AdditionalFiles Include="Inner\*.tscn" Container="A" Type="PackedScene"/>
