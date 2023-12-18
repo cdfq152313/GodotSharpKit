@@ -7,15 +7,6 @@ GodotSharpKit offers three powerful generators to enhance your Godot game develo
 
 3. Signal Generator: Streamlines signal emission by automatically generating EmitSignal functions based on delegate definitions. This ensures correct parameter types and error-free signal handling in your Godot and C# projects.
 
-# Installation
-In your .csproj file, add
-
-```xml
-<ItemGroup>
-    <PackageReference Include="GodotSharpKit" Version="2.0.0"/>
-</ItemGroup>
-```
-
 # OnReady Generator
 
 ## OnReady
