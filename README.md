@@ -135,7 +135,7 @@ Run2();
 ## Full example
 ```csharp
 using System;
-using GodotSharpKit;
+using GodotSharpKit.Misc;
 using Godot;
 using Godot4Demo.Inner;
 
@@ -211,7 +211,7 @@ This configuration specifies that all .tscn files in the defined directory will 
 After defining the AdditionalFiles in the .csproj file, the ResourceGenerator will automatically generate code to include the paths of the .tscn files under the AutoRes class.
 
 ```csharp
-using GodotSharpKit;
+using GodotSharpKit.Misc;
 using Godot;
 
 namespace Godot4Demo;
