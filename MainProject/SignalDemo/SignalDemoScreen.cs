@@ -1,5 +1,5 @@
+using System.Threading.Tasks;
 using Godot;
-using GodotSharpKit.Misc;
 
 namespace Godot4Demo.SignalDemo;
 
@@ -21,8 +21,15 @@ public partial class SignalDemoScreen : Node2D
         MySignal += () => GD.Print("Hello!");
         MySignalParam += (a, b) => GD.Print($"Hello! {a} {b}");
         MySignalParamWithGeneric += (x) => GD.Print($"Hello! {x}");
+        AsyncAction();
         EmitMySignal();
         EmitMySignalParam(1, new Node());
         EmitMySignalParamWithGeneric(new MyGeneric<int>());
+    }
+
+    private async Task AsyncAction()
+    {
+        var x = await ToSignalMySignal(this);
+        GD.Print("Async Action");
     }
 }
