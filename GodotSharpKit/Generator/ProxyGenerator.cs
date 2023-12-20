@@ -48,7 +48,13 @@ public class ProxyGenerator : IIncrementalGenerator
                 IMethodSymbol methodSymbol
                     when methodSymbol.MethodKind != MethodKind.PropertyGet
                         && methodSymbol.MethodKind != MethodKind.PropertySet
-                    => new Member(),
+                    => new Method(
+                        methodSymbol.Name,
+                        methodSymbol.ReturnsVoid ? null : methodSymbol.ReturnType.FullName(),
+                        methodSymbol.Parameters
+                            .Select(v => new Param(v.Type.FullName(), v.Name))
+                            .ToList()
+                    ),
                 _ => new Member(),
             };
             actionList.Add(actionInfo);
@@ -67,26 +73,23 @@ public class ProxyGenerator : IIncrementalGenerator
         {
             context.CancellationToken.ThrowIfCancellationRequested();
             var namespaceStatement = info.Namespace == "" ? "" : $"namespace {info.Namespace};";
-            var declaration = string.Join(
-                "\n        ",
-                info.MemberList.Select(v => v.ToDeclaration())
-            );
+            var declaration = string.Join("\n", info.MemberList.Select(v => v.ToDeclaration()));
             context.AddSource(
                 $"{info.Namespace.ConcatDot(info.ClassName).Replace(".", "_")}.g.cs",
                 @$"{namespaceStatement}
-
-public partial class {info.ClassName} 
-{{ 
+            
+public partial class {info.ClassName}
+{{
     public {info.ClassName}(Godot.GodotObject obj)
     {{
         GodotObject = obj;
     }}
-    
+
     public Godot.GodotObject GodotObject;
-    
+
     {declaration}
 }}
-"
+            "
             );
         }
     }
@@ -103,18 +106,19 @@ public partial class {info.ClassName}
         public override string ToDeclaration()
         {
             var sb = new StringBuilder();
+            sb.AppendIndent();
             sb.AppendLine($"public {Type} {Name}");
             sb.AppendIndent();
             sb.AppendLine("{");
             if (HasGetter)
             {
                 sb.AppendIndent(2);
-                sb.AppendLine($"get => GodotObject.Get(\"{Name}\");");
+                sb.AppendLine($"get => ({Type}) GodotObject.Get(\"{Name}\");");
             }
             if (HasSetter)
             {
                 sb.AppendIndent(2);
-                sb.AppendLine($"set => GodotObject.Set(\"{Name}\", value)");
+                sb.AppendLine($"set => GodotObject.Set(\"{Name}\", value);");
             }
             sb.AppendIndent();
             sb.Append("}");
@@ -122,11 +126,31 @@ public partial class {info.ClassName}
         }
     }
 
-    record Method(string Name, string Type) : Member
+    record Method(string Name, string? Return, List<Param> Params) : Member
     {
         public override string ToDeclaration()
         {
-            throw new NotImplementedException();
+            var sb = new StringBuilder();
+            var parameters = string.Join(",", Params.Select(v => $"{v.Type} {v.Name}"));
+            sb.AppendIndent();
+            sb.AppendLine($"public {Return ?? "void"} {Name}({parameters})");
+            sb.AppendIndent();
+            sb.AppendLine("{");
+
+            var callArgs = string.Join(
+                ", ",
+                new List<string> { $"\"{Name}\"" }.Concat(Params.Select(v => v.Name))
+            );
+            var callStatement = $"GodotObject.Call({callArgs});";
+            sb.AppendIndent(times: 2);
+            if (Return != null)
+            {
+                sb.Append($"return ({Return}) ");
+            }
+            sb.AppendLine(callStatement);
+            sb.AppendIndent();
+            sb.Append("}");
+            return sb.ToString();
         }
     }
 
@@ -137,6 +161,8 @@ public partial class {info.ClassName}
             throw new NotImplementedException();
         }
     }
+
+    record Param(string Type, string Name);
 
     class RootEqual : IEqualityComparer<Root>
     {
