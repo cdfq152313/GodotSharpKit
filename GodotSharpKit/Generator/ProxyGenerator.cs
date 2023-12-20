@@ -36,7 +36,7 @@ public class ProxyGenerator : IIncrementalGenerator
         foreach (var member in interfaceSymbol.GetMembers())
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var actionInfo = member switch
+            Member? action = member switch
             {
                 IPropertySymbol propertySymbol
                     => new Property(
@@ -55,9 +55,20 @@ public class ProxyGenerator : IIncrementalGenerator
                             .Select(v => new Param(v.Type.FullName(), v.Name))
                             .ToList()
                     ),
-                _ => new Member(),
+                INamedTypeSymbol { DelegateInvokeMethod: not null } namedTypeSymbol
+                    when namedTypeSymbol.Name.Contains("EventHandler")
+                    => new Signal(
+                        namedTypeSymbol.Name.Replace("EventHandler", ""),
+                        namedTypeSymbol.DelegateInvokeMethod.Parameters
+                            .Select(v => new Param(v.Type.FullName(), v.Name))
+                            .ToList()
+                    ),
+                _ => null,
             };
-            actionList.Add(actionInfo);
+            if (action != null)
+            {
+                actionList.Add(action);
+            }
         }
 
         return new Root(
@@ -73,7 +84,7 @@ public class ProxyGenerator : IIncrementalGenerator
         {
             context.CancellationToken.ThrowIfCancellationRequested();
             var namespaceStatement = info.Namespace == "" ? "" : $"namespace {info.Namespace};";
-            var declaration = string.Join("\n", info.MemberList.Select(v => v.ToDeclaration()));
+            var declaration = string.Join("\n\n", info.MemberList.Select(v => v.ToDeclaration()));
             context.AddSource(
                 $"{info.Namespace.ConcatDot(info.ClassName).Replace(".", "_")}.g.cs",
                 @$"{namespaceStatement}
@@ -154,11 +165,28 @@ public partial class {info.ClassName}
         }
     }
 
-    record Signal : Member
+    record Signal(string Name, List<Param> Params) : Member
     {
         public override string ToDeclaration()
         {
-            throw new NotImplementedException();
+            var sb = new StringBuilder();
+            sb.AppendIndent();
+            var action =
+                Params.Count == 0
+                    ? "System.Action"
+                    : $"System.Action<{string.Join(", ", Params.Select(v => v.Type))}>";
+            sb.AppendLine($"public event {action} {Name}");
+            sb.AppendIndent();
+            sb.AppendLine("{");
+            sb.AppendIndent(2);
+            sb.AppendLine($"add => GodotObject.Connect(\"{Name}\", Godot.Callable.From(value));");
+            sb.AppendIndent(2);
+            sb.AppendLine(
+                $"remove => GodotObject.Disconnect(\"{Name}\", Godot.Callable.From(value));"
+            );
+            sb.AppendIndent();
+            sb.AppendLine("}");
+            return sb.ToString();
         }
     }
 

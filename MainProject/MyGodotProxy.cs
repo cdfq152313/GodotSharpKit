@@ -19,9 +19,5 @@ public interface IMyGodotProxy
 
 public partial class MyGodotProxy : IMyGodotProxy
 {
-    void XXX()
-    {
-        // X;
-        // GetterOnly;
-    }
+    void XXX() { }
 }
