@@ -25,7 +25,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\GodotSharpKit.Misc\GodotSharpKit.Misc.csproj" PrivateAssets="all"/>
+<!--        <ProjectReference Include="..\GodotSharpKit.Misc\GodotSharpKit.Misc.csproj" PrivateAssets="all"/>-->
     </ItemGroup>
     
     <ItemGroup>
@@ -40,16 +40,16 @@
     </ItemGroup>
 
     <!-- Local Development-->
-    <!--    <ItemGroup>-->
-    <!--        <ProjectReference Include="..\GodotSharpKit.Misc\GodotSharpKit.Misc.csproj" GeneratePathProperty="true" PrivateAssets="all"/>-->
-    <!--    </ItemGroup>-->
-    <!--    <PropertyGroup>-->
-    <!--        <GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>-->
-    <!--    </PropertyGroup>-->
-    <!--    <Target Name="GetDependencyTargetPaths">-->
-    <!--        <ItemGroup>-->
-    <!--            <None Include="$(PKGGodotSharpKit_Misc)\lib\net6.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>-->
-    <!--            <TargetPathWithTargetPlatformMoniker Include="..\GodotSharpKit.Misc\$(OutputPath)\*.dll" IncludeRuntimeDependency="false"/>-->
-    <!--        </ItemGroup>-->
-    <!--    </Target>-->
+        <ItemGroup>
+            <ProjectReference Include="..\GodotSharpKit.Misc\GodotSharpKit.Misc.csproj" GeneratePathProperty="true" PrivateAssets="all"/>
+        </ItemGroup>
+        <PropertyGroup>
+            <GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
+        </PropertyGroup>
+        <Target Name="GetDependencyTargetPaths">
+            <ItemGroup>
+                <None Include="$(PKGGodotSharpKit_Misc)\lib\net6.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+                <TargetPathWithTargetPlatformMoniker Include="..\GodotSharpKit.Misc\$(OutputPath)\*.dll" IncludeRuntimeDependency="false"/>
+            </ItemGroup>
+        </Target>
 </Project>

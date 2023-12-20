@@ -6,22 +6,23 @@
         <EnableDynamicLoading>true</EnableDynamicLoading>
     </PropertyGroup>
     <ItemGroup>
-        <Content Include="RiderTestRunner\NetCoreRunner.tscn"/>
-    </ItemGroup>
-    <ItemGroup>
-        <PackageReference Include="GodotSharpKit" Version="1.2.7"/>
+        <!--        <PackageReference Include="GodotSharpKit" Version="1.2.7"/>-->
     </ItemGroup>
     <!--   Local Development -->
-    <!--    <ItemGroup>-->
-    <!--        <ProjectReference Include="..\GodotSharpKit\GodotSharpKit.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>-->
-    <!--        <ProjectReference Include="..\GodotSharpKit.Misc\GodotSharpKit.Misc.csproj"/>-->
-    <!--    </ItemGroup>-->
+        <ItemGroup>
+            <ProjectReference Include="..\GodotSharpKit\GodotSharpKit.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
+            <ProjectReference Include="..\GodotSharpKit.Misc\GodotSharpKit.Misc.csproj"/>
+            <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Container" />
+            <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Type" />
+        </ItemGroup>
 
     <ItemGroup>
-        <AdditionalFiles Include="*.tscn"/>
-        <AdditionalFiles Include="Inner\*.tscn" Container="A" Type="PackedScene"/>
-        <AdditionalFiles Include="Deep\Deep2\*.tscn" Container="A" Type="PackedScene"/>
-        <AdditionalFiles Include="icon.svg" Container="Image"/>
-        <AdditionalFiles Include="Fonts\*.tres" Container="Fonts" Type="Font"/>
+        <AdditionalFiles Include="AutoResDemo\*.tscn" Container="Scenes" Type="PackedScene"/>
+        <AdditionalFiles Include="OnReadyDemo\*.tscn" Container="Scenes" Type="PackedScene"/>
+        <AdditionalFiles Include="ProxyDemo\*.tscn" Container="Scenes" Type="PackedScene"/>
+        <AdditionalFiles Include="SignalDemo\*.tscn" Container="Scenes" Type="PackedScene"/>
+        <AdditionalFiles Include="AutoResDemo\Deep\Deep2\*.tscn" Container="A" Type="PackedScene"/>
+        <AdditionalFiles Include="AutoResDemo\Fonts\*.tres" Container="Fonts" Type="Font"/>
+        <AdditionalFiles Include="icon.svg" />
     </ItemGroup>
 </Project>
