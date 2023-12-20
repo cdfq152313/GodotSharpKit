@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://dcofxs714vl0m"]
+
+[ext_resource type="Script" path="res://AutoResDemo/AutoResDemoScreen.cs" id="1_4216d"]
+
+[node name="AutoResDemoScreen" type="Node2D"]
+script = ExtResource("1_4216d")

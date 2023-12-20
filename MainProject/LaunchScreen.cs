@@ -1,59 +1,30 @@
-using System;
 using Godot;
-using Godot4Demo.Inner;
 using GodotSharpKit.Misc;
 
 namespace Godot4Demo;
 
 [OnReady]
-public partial class LaunchScreen : Node2D
+public partial class LaunchScreen : Control
 {
-    public partial class MyGeneric<T> : RefCounted { }
-
-    [Signal]
-    public delegate void MySignalEventHandler();
-
-    [Signal]
-    public delegate void MySignalParamEventHandler(int a, Node b);
-
-    [Signal]
-    public delegate void MySignalParamWithGenericEventHandler(MyGeneric<int> x);
+    [OnReadyGet]
+    private Button _onReadyDemo = null!;
 
     [OnReadyGet]
-    private CustomNode _node1 = null!;
+    private Button _autoResDemo = null!;
 
-    [OnReadyGet("haha")]
-    private Node _node2 = null!;
+    [OnReadyGet]
+    private Button _signalDemo = null!;
 
-    private Timer _timer = new();
+    [OnReadyGet]
+    private Button _proxyDemo = null!;
 
     public override void _Ready()
     {
         base._Ready();
         OnReady();
-        MySignal += () => GD.Print("Hello!");
-        Console.WriteLine(typeof(OnReadyGet).FullName);
-        EmitMySignalParam(1, new Node());
-        EmitMySignal();
-        EmitMySignalParamWithGeneric(new MyGeneric<int>());
-        var awaiter = ToSignalMySignalParam(this);
-    }
-
-    [OnReadyConnect("", nameof(MySignal))]
-    private void OnMySignal() { }
-
-    [OnReadyConnect(nameof(_timer), nameof(Timer.Timeout))]
-    private void OnTimeout() { }
-
-    [OnReadyRun(2)]
-    private void Run2()
-    {
-        GD.Print("Two!");
-    }
-
-    [OnReadyRun(1)]
-    private void Run1()
-    {
-        GD.Print("One!");
+        _onReadyDemo.Pressed += () => GetTree().ChangeSceneToFile(Scenes.OnReadyDemoScreen.Path);
+        _autoResDemo.Pressed += () => GetTree().ChangeSceneToFile(Scenes.AutoResDemoScreen.Path);
+        _signalDemo.Pressed += () => GetTree().ChangeSceneToFile(Scenes.SignalDemoScreen.Path);
+        _proxyDemo.Pressed += () => GetTree().ChangeSceneToFile(Scenes.ProxyDemoScreen.Path);
     }
 }

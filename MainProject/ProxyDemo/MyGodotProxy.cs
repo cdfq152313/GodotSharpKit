@@ -14,8 +14,10 @@ public interface IMyGodotProxy
     string MyMethodWithParamAndReturnValue(int a, Node b);
     delegate void MySignalEventHandler();
     delegate void MySignalParamEventHandler(int a, Node b);
-    delegate void MySignalParamWithGenericEventHandler(LaunchScreen.MyGeneric<int> x);
+    delegate void MySignalParamWithGenericEventHandler(MyGeneric<int> x);
 }
+
+public partial class MyGeneric<T> : RefCounted { }
 
 public partial class MyGodotProxy : IMyGodotProxy
 {
