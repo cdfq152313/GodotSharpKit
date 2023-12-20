@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Text;
 using Microsoft.CodeAnalysis;
 
 namespace GodotSharpKit;
@@ -66,5 +67,13 @@ public static class Util
     public static string ConcatDot(this string a, string b)
     {
         return a.Length > 0 ? $"{a}.{b}" : b;
+    }
+
+    public static void AppendIndent(this StringBuilder sb, int times = 1)
+    {
+        for (var i = 0; i < times; ++i)
+        {
+            sb.Append("    ");
+        }
     }
 }
