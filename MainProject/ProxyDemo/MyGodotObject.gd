@@ -18,8 +18,3 @@ func my_method(a: int, b: Node):
 func my_method_and_return_value(a: int, b: Node):
 	print("MyMethodAndReturnValue: ", a, "/",b)
 	return "abc"
-
-func EmitAll():
-	MySignal.emit()
-	my_signal_param.emit(1, Node.new())
-	my_signal_param_with_generic.emit([1,2,3,4])

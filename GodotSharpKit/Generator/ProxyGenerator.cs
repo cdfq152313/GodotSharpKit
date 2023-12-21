@@ -113,11 +113,12 @@ public class ProxyGenerator : IIncrementalGenerator
             context.CancellationToken.ThrowIfCancellationRequested();
             var namespaceStatement = info.Namespace == "" ? "" : $"namespace {info.Namespace};";
             var declaration = string.Join("\n\n", info.MemberList.Select(v => v.ToDeclaration()));
+            var signalDeclaration = SignalDeclaration(info.MemberList.OfType<Signal>().ToList());
             context.AddSource(
                 $"{info.Namespace.ConcatDot(info.ClassName).Replace(".", "_")}.g.cs",
                 @$"{namespaceStatement}
             
-public partial class {info.ClassName} : I{info.ClassName} {{
+public partial class {info.ClassName} : I{info.ClassName}
 {{
     public {info.ClassName}(Godot.GodotObject obj)
     {{
@@ -127,10 +128,34 @@ public partial class {info.ClassName} : I{info.ClassName} {{
     public Godot.GodotObject GodotObject;
 
 {declaration}
+{signalDeclaration}
 }}
             "
             );
         }
+    }
+
+    private string SignalDeclaration(List<Signal> signals)
+    {
+        if (signals.Count == 0)
+        {
+            return "";
+        }
+        var sb = new StringBuilder();
+        sb.AppendIndent();
+        sb.AppendLine("public class SignalName");
+        sb.AppendIndent();
+        sb.AppendLine("{");
+        foreach (var signal in signals)
+        {
+            sb.AppendIndent(2);
+            sb.AppendLine(
+                $"public static readonly Godot.StringName {signal.CSharpName} = (Godot.StringName) \"{signal.GodotName ?? ToSnake(signal.CSharpName, signal.ApplyToSnake)}\";"
+            );
+        }
+        sb.AppendIndent();
+        sb.AppendLine("}");
+        return sb.ToString();
     }
 
     record Root(string Namespace, string ClassName, List<Member> MemberList);
@@ -216,13 +241,13 @@ public partial class {info.ClassName} : I{info.ClassName} {{
         {
             var sb = new StringBuilder();
             var godotName = GodotName ?? ToSnake(CSharpName, ApplyToSnake);
-            AppendListener(sb, godotName);
-            AppendEmitter(sb, godotName);
-            AppendAwaiter(sb, godotName);
+            AppendListener(sb);
+            AppendEmitter(sb);
+            AppendAwaiter(sb);
             return sb.ToString();
         }
 
-        private void AppendListener(StringBuilder sb, string godotName)
+        private void AppendListener(StringBuilder sb)
         {
             sb.AppendIndent();
             var action =
@@ -234,17 +259,17 @@ public partial class {info.ClassName} : I{info.ClassName} {{
             sb.AppendLine("{");
             sb.AppendIndent(2);
             sb.AppendLine(
-                $"add => GodotObject.Connect(\"{godotName}\", Godot.Callable.From(value));"
+                $"add => GodotObject.Connect(SignalName.{CSharpName}, Godot.Callable.From(value));"
             );
             sb.AppendIndent(2);
             sb.AppendLine(
-                $"remove => GodotObject.Disconnect(\"{godotName}\", Godot.Callable.From(value));"
+                $"remove => GodotObject.Disconnect(SignalName.{CSharpName}, Godot.Callable.From(value));"
             );
             sb.AppendIndent();
             sb.AppendLine("}");
         }
 
-        private void AppendEmitter(StringBuilder sb, string godotName)
+        private void AppendEmitter(StringBuilder sb)
         {
             sb.AppendIndent();
             sb.AppendLine(
@@ -253,12 +278,12 @@ public partial class {info.ClassName} : I{info.ClassName} {{
             sb.AppendIndent();
             sb.AppendLine("{");
             sb.AppendIndent(2);
-            sb.AppendLine($"return user.ToSignal(GodotObject, \"{godotName}\");");
+            sb.AppendLine($"return user.ToSignal(GodotObject, SignalName.{CSharpName});");
             sb.AppendIndent();
             sb.AppendLine("}");
         }
 
-        private void AppendAwaiter(StringBuilder sb, string godotName)
+        private void AppendAwaiter(StringBuilder sb)
         {
             sb.AppendIndent();
             var parameters = string.Join(", ", Params.Select(v => $"{v.Type} {v.Name}"));
@@ -268,7 +293,7 @@ public partial class {info.ClassName} : I{info.ClassName} {{
             sb.AppendIndent(2);
             var args =
                 Params.Count == 0 ? "" : $", {string.Join(", ", Params.Select(v => v.Name))}";
-            sb.AppendLine($"GodotObject.EmitSignal(\"{godotName}\"{args});");
+            sb.AppendLine($"GodotObject.EmitSignal(SignalName.{CSharpName}{args});");
             sb.AppendIndent();
             sb.AppendLine("}");
         }

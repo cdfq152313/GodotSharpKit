@@ -17,12 +17,10 @@ public interface IMyGodotObject
     void MyMethod(int a, Node b);
     string MyMethodAndReturnValue(int a, Node b);
 
-    void EmitAll();
-
     [GodotProxyName("MySignal")]
     delegate void MySignalEventHandler();
     delegate void MySignalParamEventHandler(int a, Node b);
     delegate void MySignalParamWithGenericEventHandler(Array<int> x);
 }
 
-public partial class MyGodotObject : IMyGodotObject { }
+public partial class MyGodotObject { }
