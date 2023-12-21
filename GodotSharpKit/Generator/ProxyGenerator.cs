@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using System.Text;
+using System.Text.RegularExpressions;
 using GodotSharpKit.Misc;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -9,6 +10,17 @@ namespace GodotSharpKit.Generator;
 [Generator(LanguageNames.CSharp)]
 public class ProxyGenerator : IIncrementalGenerator
 {
+    private static Regex _pascal = new(@"(\B[A-Z])");
+
+    private static string ToSnake(string input, bool apply)
+    {
+        if (string.IsNullOrEmpty(input) || !apply)
+        {
+            return input;
+        }
+        return _pascal.Replace(input, "_$1").ToLower().TrimStart('_');
+    }
+
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var syntaxProvider = context.SyntaxProvider
@@ -32,6 +44,10 @@ public class ProxyGenerator : IIncrementalGenerator
     )
     {
         var interfaceSymbol = (ITypeSymbol)context.TargetSymbol;
+        var godotProxyAttribute = interfaceSymbol
+            .GetAttributes()
+            .First(v => v.AttributeClass?.FullName() == typeof(GodotProxy).FullName);
+        var autoSnakeCase = godotProxyAttribute.ConstructorArguments[0].Value as bool? ?? false;
         var actionList = new List<Member>();
         foreach (var member in interfaceSymbol.GetMembers())
         {
@@ -48,6 +64,7 @@ public class ProxyGenerator : IIncrementalGenerator
                     => new Property(
                         propertySymbol.Name,
                         godotName,
+                        autoSnakeCase,
                         propertySymbol.Type.FullName(),
                         propertySymbol.GetMethod != null,
                         propertySymbol.SetMethod != null
@@ -58,6 +75,7 @@ public class ProxyGenerator : IIncrementalGenerator
                     => new Method(
                         methodSymbol.Name,
                         godotName,
+                        autoSnakeCase,
                         methodSymbol.ReturnsVoid ? null : methodSymbol.ReturnType.FullName(),
                         methodSymbol.Parameters
                             .Select(v => new Param(v.Type.FullName(), v.Name))
@@ -68,6 +86,7 @@ public class ProxyGenerator : IIncrementalGenerator
                     => new Signal(
                         namedTypeSymbol.Name.Replace("EventHandler", ""),
                         godotName,
+                        autoSnakeCase,
                         namedTypeSymbol.DelegateInvokeMethod.Parameters
                             .Select(v => new Param(v.Type.FullName(), v.Name))
                             .ToList()
@@ -124,6 +143,7 @@ public partial class {info.ClassName}
     record Property(
         string CSharpName,
         string? GodotName,
+        bool ApplyToSnake,
         string Type,
         bool HasGetter,
         bool HasSetter
@@ -132,6 +152,7 @@ public partial class {info.ClassName}
         public override string ToDeclaration()
         {
             var sb = new StringBuilder();
+            var godotName = GodotName ?? ToSnake(CSharpName, ApplyToSnake);
             sb.AppendIndent();
             sb.AppendLine($"public {Type} {CSharpName}");
             sb.AppendIndent();
@@ -139,12 +160,12 @@ public partial class {info.ClassName}
             if (HasGetter)
             {
                 sb.AppendIndent(2);
-                sb.AppendLine($"get => ({Type}) GodotObject.Get(\"{GodotName ?? CSharpName}\");");
+                sb.AppendLine($"get => ({Type}) GodotObject.Get(\"{godotName}\");");
             }
             if (HasSetter)
             {
                 sb.AppendIndent(2);
-                sb.AppendLine($"set => GodotObject.Set(\"{GodotName ?? CSharpName}\", value);");
+                sb.AppendLine($"set => GodotObject.Set(\"{godotName}\", value);");
             }
             sb.AppendIndent();
             sb.Append("}");
@@ -152,7 +173,13 @@ public partial class {info.ClassName}
         }
     }
 
-    record Method(string CSharpName, string? GodotName, string? Return, List<Param> Params) : Member
+    record Method(
+        string CSharpName,
+        string? GodotName,
+        bool ApplyToSnake,
+        string? Return,
+        List<Param> Params
+    ) : Member
     {
         public override string ToDeclaration()
         {
@@ -165,7 +192,7 @@ public partial class {info.ClassName}
 
             var callArgs = string.Join(
                 ", ",
-                new List<string> { $"\"{GodotName ?? CSharpName}\"" }.Concat(
+                new List<string> { $"\"{GodotName ?? ToSnake(CSharpName, ApplyToSnake)}\"" }.Concat(
                     Params.Select(v => v.Name)
                 )
             );
@@ -182,11 +209,13 @@ public partial class {info.ClassName}
         }
     }
 
-    record Signal(string CSharpName, string? GodotName, List<Param> Params) : Member
+    record Signal(string CSharpName, string? GodotName, bool ApplyToSnake, List<Param> Params)
+        : Member
     {
         public override string ToDeclaration()
         {
             var sb = new StringBuilder();
+            var godotName = GodotName ?? ToSnake(CSharpName, ApplyToSnake);
             sb.AppendIndent();
             var action =
                 Params.Count == 0
@@ -197,11 +226,11 @@ public partial class {info.ClassName}
             sb.AppendLine("{");
             sb.AppendIndent(2);
             sb.AppendLine(
-                $"add => GodotObject.Connect(\"{GodotName ?? CSharpName}\", Godot.Callable.From(value));"
+                $"add => GodotObject.Connect(\"{godotName}\", Godot.Callable.From(value));"
             );
             sb.AppendIndent(2);
             sb.AppendLine(
-                $"remove => GodotObject.Disconnect(\"{GodotName ?? CSharpName}\", Godot.Callable.From(value));"
+                $"remove => GodotObject.Disconnect(\"{godotName}\", Godot.Callable.From(value));"
             );
             sb.AppendIndent();
             sb.AppendLine("}");
