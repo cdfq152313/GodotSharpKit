@@ -1,15 +1,15 @@
 extends RefCounted
 
-var X: int = 0
+var x: int = 0
 var GetterOnly: int = 300
 var SetterOnly: String
 
-signal MySignal()
+signal my_signal()
 signal MySignalParam(a: int, b:Node)
 signal MySignalParamWithGeneric(array)
 
 
-func PrintSetterOnly():
+func print_setter_only():
 	print("SetterOnly: ", SetterOnly)
 
 func MyMethod(a: int, b: Node):
@@ -20,6 +20,6 @@ func MyMethodAndReturnValue(a: int, b: Node):
 	return "abc"
 
 func EmitAll():
-	MySignal.emit()
+	my_signal.emit()
 	MySignalParam.emit(1, Node.new())
 	MySignalParamWithGeneric.emit([1,2,3,4])

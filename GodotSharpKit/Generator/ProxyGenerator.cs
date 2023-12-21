@@ -36,11 +36,18 @@ public class ProxyGenerator : IIncrementalGenerator
         foreach (var member in interfaceSymbol.GetMembers())
         {
             cancellationToken.ThrowIfCancellationRequested();
-            Member? action = member switch
+            var nameAttribute = member
+                .GetAttributes()
+                .FirstOrDefault(
+                    v => v.AttributeClass?.FullName() == typeof(GodotProxyName).FullName
+                );
+            var godotName = nameAttribute?.ConstructorArguments[0].Value as string;
+            Member action = member switch
             {
                 IPropertySymbol propertySymbol
                     => new Property(
                         propertySymbol.Name,
+                        godotName,
                         propertySymbol.Type.FullName(),
                         propertySymbol.GetMethod != null,
                         propertySymbol.SetMethod != null
@@ -50,6 +57,7 @@ public class ProxyGenerator : IIncrementalGenerator
                         && methodSymbol.MethodKind != MethodKind.PropertySet
                     => new Method(
                         methodSymbol.Name,
+                        godotName,
                         methodSymbol.ReturnsVoid ? null : methodSymbol.ReturnType.FullName(),
                         methodSymbol.Parameters
                             .Select(v => new Param(v.Type.FullName(), v.Name))
@@ -59,13 +67,14 @@ public class ProxyGenerator : IIncrementalGenerator
                     when namedTypeSymbol.Name.Contains("EventHandler")
                     => new Signal(
                         namedTypeSymbol.Name.Replace("EventHandler", ""),
+                        godotName,
                         namedTypeSymbol.DelegateInvokeMethod.Parameters
                             .Select(v => new Param(v.Type.FullName(), v.Name))
                             .ToList()
                     ),
-                _ => null,
+                _ => new NotImplement(),
             };
-            if (action != null)
+            if (action is not NotImplement)
             {
                 actionList.Add(action);
             }
@@ -112,24 +121,30 @@ public partial class {info.ClassName}
         public virtual string ToDeclaration() => "";
     }
 
-    record Property(string Name, string Type, bool HasGetter, bool HasSetter) : Member
+    record Property(
+        string CSharpName,
+        string? GodotName,
+        string Type,
+        bool HasGetter,
+        bool HasSetter
+    ) : Member
     {
         public override string ToDeclaration()
         {
             var sb = new StringBuilder();
             sb.AppendIndent();
-            sb.AppendLine($"public {Type} {Name}");
+            sb.AppendLine($"public {Type} {CSharpName}");
             sb.AppendIndent();
             sb.AppendLine("{");
             if (HasGetter)
             {
                 sb.AppendIndent(2);
-                sb.AppendLine($"get => ({Type}) GodotObject.Get(\"{Name}\");");
+                sb.AppendLine($"get => ({Type}) GodotObject.Get(\"{GodotName ?? CSharpName}\");");
             }
             if (HasSetter)
             {
                 sb.AppendIndent(2);
-                sb.AppendLine($"set => GodotObject.Set(\"{Name}\", value);");
+                sb.AppendLine($"set => GodotObject.Set(\"{GodotName ?? CSharpName}\", value);");
             }
             sb.AppendIndent();
             sb.Append("}");
@@ -137,20 +152,22 @@ public partial class {info.ClassName}
         }
     }
 
-    record Method(string Name, string? Return, List<Param> Params) : Member
+    record Method(string CSharpName, string? GodotName, string? Return, List<Param> Params) : Member
     {
         public override string ToDeclaration()
         {
             var sb = new StringBuilder();
             var parameters = string.Join(",", Params.Select(v => $"{v.Type} {v.Name}"));
             sb.AppendIndent();
-            sb.AppendLine($"public {Return ?? "void"} {Name}({parameters})");
+            sb.AppendLine($"public {Return ?? "void"} {CSharpName}({parameters})");
             sb.AppendIndent();
             sb.AppendLine("{");
 
             var callArgs = string.Join(
                 ", ",
-                new List<string> { $"\"{Name}\"" }.Concat(Params.Select(v => v.Name))
+                new List<string> { $"\"{GodotName ?? CSharpName}\"" }.Concat(
+                    Params.Select(v => v.Name)
+                )
             );
             var callStatement = $"GodotObject.Call({callArgs});";
             sb.AppendIndent(times: 2);
@@ -165,7 +182,7 @@ public partial class {info.ClassName}
         }
     }
 
-    record Signal(string Name, List<Param> Params) : Member
+    record Signal(string CSharpName, string? GodotName, List<Param> Params) : Member
     {
         public override string ToDeclaration()
         {
@@ -175,20 +192,24 @@ public partial class {info.ClassName}
                 Params.Count == 0
                     ? "System.Action"
                     : $"System.Action<{string.Join(", ", Params.Select(v => v.Type))}>";
-            sb.AppendLine($"public event {action} {Name}");
+            sb.AppendLine($"public event {action} {CSharpName}");
             sb.AppendIndent();
             sb.AppendLine("{");
             sb.AppendIndent(2);
-            sb.AppendLine($"add => GodotObject.Connect(\"{Name}\", Godot.Callable.From(value));");
+            sb.AppendLine(
+                $"add => GodotObject.Connect(\"{GodotName ?? CSharpName}\", Godot.Callable.From(value));"
+            );
             sb.AppendIndent(2);
             sb.AppendLine(
-                $"remove => GodotObject.Disconnect(\"{Name}\", Godot.Callable.From(value));"
+                $"remove => GodotObject.Disconnect(\"{GodotName ?? CSharpName}\", Godot.Callable.From(value));"
             );
             sb.AppendIndent();
             sb.AppendLine("}");
             return sb.ToString();
         }
     }
+
+    record NotImplement : Member;
 
     record Param(string Type, string Name);
 
