@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Godot;
 using Godot.Collections;
 
@@ -37,6 +38,7 @@ public partial class ProxyDemoScreen : Node2D
         _myObj.MySignal += MyObjOnMySignal;
         _myObj.MySignalParam += MyObjOnMySignalParam;
         _myObj.MySignalParamWithGeneric += MyObjOnMySignalParamWithGeneric;
+        Awaiter(_myObj);
         _myObj.EmitSignalMySignal();
         _myObj.EmitSignalMySignalParam(1, new Node());
         _myObj.EmitSignalMySignalParamWithGeneric(new Array<int> { 1, 2, 3, 4 });
@@ -48,6 +50,14 @@ public partial class ProxyDemoScreen : Node2D
         _myObj.EmitSignalMySignal();
         _myObj.EmitSignalMySignalParam(1, new Node());
         _myObj.EmitSignalMySignalParamWithGeneric(new Array<int> { 1, 2, 3, 4 });
+    }
+
+    private async Task Awaiter(MyGodotObject myObj)
+    {
+        await myObj.ToSignalMySignal(this);
+        await myObj.ToSignalMySignalParam(this);
+        await myObj.ToSignalMySignalParamWithGeneric(this);
+        GD.Print("Awaiter End");
     }
 
     private void MyObjOnMySignal()
