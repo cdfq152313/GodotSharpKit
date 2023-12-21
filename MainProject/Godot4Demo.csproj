@@ -6,15 +6,15 @@
         <EnableDynamicLoading>true</EnableDynamicLoading>
     </PropertyGroup>
     <ItemGroup>
-        <!--        <PackageReference Include="GodotSharpKit" Version="1.2.7"/>-->
+        <PackageReference Include="GodotSharpKit" Version="2.1.0"/>
     </ItemGroup>
     <!--   Local Development -->
-        <ItemGroup>
-            <ProjectReference Include="..\GodotSharpKit\GodotSharpKit.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
-            <ProjectReference Include="..\GodotSharpKit.Misc\GodotSharpKit.Misc.csproj"/>
-            <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Container" />
-            <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Type" />
-        </ItemGroup>
+<!--    <ItemGroup>-->
+<!--        <ProjectReference Include="..\GodotSharpKit\GodotSharpKit.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>-->
+<!--        <ProjectReference Include="..\GodotSharpKit.Misc\GodotSharpKit.Misc.csproj"/>-->
+<!--        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Container"/>-->
+<!--        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Type"/>-->
+<!--    </ItemGroup>-->
 
     <ItemGroup>
         <AdditionalFiles Include="AutoResDemo\*.tscn" Container="Scenes" Type="PackedScene"/>
@@ -23,6 +23,6 @@
         <AdditionalFiles Include="SignalDemo\*.tscn" Container="Scenes" Type="PackedScene"/>
         <AdditionalFiles Include="AutoResDemo\Deep\Deep2\*.tscn" Container="A" Type="PackedScene"/>
         <AdditionalFiles Include="AutoResDemo\Fonts\*.tres" Container="Fonts" Type="Font"/>
-        <AdditionalFiles Include="icon.svg" />
+        <AdditionalFiles Include="icon.svg"/>
     </ItemGroup>
 </Project>
