@@ -143,7 +143,7 @@ public partial class {info.ClassName} : I{info.ClassName}
         }
         var sb = new StringBuilder();
         sb.AppendIndent();
-        sb.AppendLine("public class SignalName");
+        sb.AppendLine("public static class SignalName");
         sb.AppendIndent();
         sb.AppendLine("{");
         foreach (var signal in signals)
