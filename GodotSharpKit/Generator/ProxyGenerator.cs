@@ -117,7 +117,7 @@ public class ProxyGenerator : IIncrementalGenerator
                 $"{info.Namespace.ConcatDot(info.ClassName).Replace(".", "_")}.g.cs",
                 @$"{namespaceStatement}
             
-public partial class {info.ClassName}
+public partial class {info.ClassName} : I{info.ClassName} {{
 {{
     public {info.ClassName}(Godot.GodotObject obj)
     {{
@@ -126,7 +126,7 @@ public partial class {info.ClassName}
 
     public Godot.GodotObject GodotObject;
 
-    {declaration}
+{declaration}
 }}
             "
             );
@@ -216,6 +216,14 @@ public partial class {info.ClassName}
         {
             var sb = new StringBuilder();
             var godotName = GodotName ?? ToSnake(CSharpName, ApplyToSnake);
+            AppendListener(sb, godotName);
+            AppendEmitter(sb, godotName);
+            AppendAwaiter(sb, godotName);
+            return sb.ToString();
+        }
+
+        private void AppendListener(StringBuilder sb, string godotName)
+        {
             sb.AppendIndent();
             var action =
                 Params.Count == 0
@@ -234,7 +242,35 @@ public partial class {info.ClassName}
             );
             sb.AppendIndent();
             sb.AppendLine("}");
-            return sb.ToString();
+        }
+
+        private void AppendEmitter(StringBuilder sb, string godotName)
+        {
+            sb.AppendIndent();
+            sb.AppendLine(
+                $"public Godot.SignalAwaiter ToSignal{CSharpName}(Godot.GodotObject user)"
+            );
+            sb.AppendIndent();
+            sb.AppendLine("{");
+            sb.AppendIndent(2);
+            sb.AppendLine($"return user.ToSignal(GodotObject, \"{godotName}\");");
+            sb.AppendIndent();
+            sb.AppendLine("}");
+        }
+
+        private void AppendAwaiter(StringBuilder sb, string godotName)
+        {
+            sb.AppendIndent();
+            var parameters = string.Join(", ", Params.Select(v => $"{v.Type} {v.Name}"));
+            sb.AppendLine($"public void EmitSignal{CSharpName}({parameters})");
+            sb.AppendIndent();
+            sb.AppendLine("{");
+            sb.AppendIndent(2);
+            var args =
+                Params.Count == 0 ? "" : $", {string.Join(", ", Params.Select(v => v.Name))}";
+            sb.AppendLine($"GodotObject.EmitSignal(\"{godotName}\"{args});");
+            sb.AppendIndent();
+            sb.AppendLine("}");
         }
     }
 
