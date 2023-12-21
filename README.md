@@ -468,8 +468,12 @@ public System.String MyMethod(System.Int32 a,Godot.Node b)
 ### Signal
 Given
 ```csharp
-[GodotProxyName("my_signal_la")]
-delegate void MySignalEventHandler(int a, Node b);
+[GodotProxy]
+public interface IMyGodotObject
+{
+    [GodotProxyName("my_signal_la")]
+    delegate void MySignalEventHandler(int a, Node b);
+}
 ```
 
 Will generate
