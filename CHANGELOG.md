@@ -3,3 +3,6 @@
 
 # 2.0.0
 - Combine two nuget package to one.
+
+# 2.1.0
+- Provide Godot Proxy Generator.

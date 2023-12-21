@@ -1,11 +1,10 @@
 ﻿# Introduction
-GodotSharpKit offers three powerful generators to enhance your Godot game development:
+GodotSharpKit offers four powerful generators to enhance your Godot game development:
 
 1. OnReady Generator: Simplifies node initialization with automatically generated OnReady functions.
-
 2. Resource Generator: Automates resource file management, generating code to access resources in specific directories. Customize class names and specify resource types for efficient resource handling.
-
 3. Signal Generator: Streamlines signal emission by automatically generating EmitSignal functions based on delegate definitions. This ensures correct parameter types and error-free signal handling in your Godot and C# projects.
+4. Proxy Generator: Streamlines the creation of Godot C# class proxies from interfaces. This tool simplifies the process of defining interfaces for Godot objects by automatically generating corresponding C# classes.
 
 # OnReady Generator
 
@@ -373,5 +372,125 @@ public partial class LaunchScreen
     {
         return user.ToSignal(this, SignalName.MySignalParam);
     } 
+}
+```
+
+# Proxy Generator
+The Godot Proxy Generator is a utility designed to streamline the creation of Godot C# class proxies from interfaces. This tool simplifies the process of defining interfaces for Godot objects by automatically generating corresponding C# classes.
+
+## Simple example
+
+Given
+```csharp
+[GodotProxy]
+public interface IMyGodotObject
+{
+    int MyProperty { get; set; }
+}
+```
+
+Will generate
+```csharp
+public partial class MyGodotObject : IMyGodotObject {
+{
+    public MyGodotObject(Godot.GodotObject obj)
+    {
+        GodotObject = obj;
+    }
+
+    public Godot.GodotObject GodotObject;
+
+    public System.Int32 MyProperty
+    {
+        get => (System.Int32) GodotObject.Get("my_property");
+        set => GodotObject.Set("my_property", value);
+    }
+}
+```
+
+Interfaces marked with the `GodotProxy` attribute are identified as blueprints for generating proxy classes. The name of the generated class is derived by removing the initial 'I' from the interface name.
+
+By default, the generator automatically converts C# property names from Pascal case to snake case during class generation.To override this automatic naming behavior, use the attribute `GodotProxy(false)` within the interface declaration. 
+
+Usage
+```csharp
+var proxy = new MyGodotObject(obj); // obj is gdscript object
+proxy.MyProperty = 3310;
+```
+
+## Customize property name
+
+The GodotProxyName attribute enables users to explicitly define the corresponding Godot property names for C# properties in the generated proxy class.
+
+Given
+```csharp
+[GodotProxy]
+public interface IMyGodotObject
+{
+    [GodotProxyName("HelloWorld")]
+    int MyProperty { get; set; }
+}
+```
+
+Will generate
+```csharp
+public System.Int32 MyProperty
+{
+    get => (System.Int32) GodotObject.Get("HelloWorld");
+    set => GodotObject.Set("HelloWorld", value);
+}
+```
+
+## Generate for method and signal
+You can also generate method and signal.
+
+### Method
+
+Given
+```csharp
+[GodotProxy]
+public interface IMyGodotObject
+{
+    [GodotProxyName("MyMethodLa")]
+    string MyMethod(int a, Node b);
+}
+```
+
+Will generate
+```csharp
+public System.String MyMethod(System.Int32 a,Godot.Node b)
+{
+    return (System.String) GodotObject.Call("MyMethodLa", a, b);
+}
+
+```
+
+### Signal
+Given
+```csharp
+[GodotProxyName("my_signal_la")]
+delegate void MySignalEventHandler(int a, Node b);
+```
+
+Will generate
+
+```csharp
+public event System.Action<System.Int32, Godot.Node> MySignal
+{
+    add => GodotObject.Connect(SignalName.MySignal, Godot.Callable.From(value));
+    remove => GodotObject.Disconnect(SignalName.MySignal, Godot.Callable.From(value));
+}
+public Godot.SignalAwaiter ToSignalMySignal(Godot.GodotObject user)
+{
+    return user.ToSignal(GodotObject, SignalName.MySignal);
+}
+public void EmitSignalMySignal(System.Int32 a, Godot.Node b)
+{
+    GodotObject.EmitSignal(SignalName.MySignal, a, b);
+}
+
+public class SignalName
+{
+    public static readonly Godot.StringName MySignal = (Godot.StringName) "my_signal_la";
 }
 ```
