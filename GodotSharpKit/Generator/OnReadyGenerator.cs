@@ -10,13 +10,11 @@ public class OnReadyGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        var syntaxProvider = context.SyntaxProvider
-            .ForAttributeWithMetadataName(
-                typeof(OnReady).FullName!,
-                IsSyntaxTarget,
-                GetSyntaxTarget
-            )
-            .WithComparer(new RootEqual());
+        var syntaxProvider = context.SyntaxProvider.ForAttributeWithMetadataName(
+            typeof(OnReady).FullName!,
+            IsSyntaxTarget,
+            GetSyntaxTarget
+        );
         context.RegisterSourceOutput(syntaxProvider.Collect(), OnExecute);
     }
 
@@ -35,7 +33,7 @@ public class OnReadyGenerator : IIncrementalGenerator
             from member in classSymbol.GetMembers()
             from attribute in member.GetAttributes()
             select new { member, attribute };
-        var actionList = new List<OnReadyAction>();
+        var actionList = new SeqList<OnReadyAction>();
         foreach (var data in query)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -82,8 +80,7 @@ public class OnReadyGenerator : IIncrementalGenerator
             var namespaceStatement = info.Namespace == "" ? "" : $"namespace {info.Namespace};";
             var getNodeStatement = string.Join(
                 "\n        ",
-                info.ActionList
-                    .OfType<Get>()
+                info.ActionList.OfType<Get>()
                     .Select(
                         v =>
                             $"{v.FieldName} = GetNode<{(v.FieldTypeNamespace == "" ? "" : $"{v.FieldTypeNamespace}.")}{v.FieldType}>(\"{v.FieldPath}\");"
@@ -91,8 +88,7 @@ public class OnReadyGenerator : IIncrementalGenerator
             );
             var connectSignalStatement = string.Join(
                 "\n        ",
-                info.ActionList
-                    .OfType<Connect>()
+                info.ActionList.OfType<Connect>()
                     .Select(
                         v =>
                             $"{(v.Source.Length == 0 ? "" : $"{v.Source}.")}{v.Signal} += {v.MethodName};"
@@ -101,8 +97,7 @@ public class OnReadyGenerator : IIncrementalGenerator
 
             var runStatement = string.Join(
                 "\n        ",
-                info.ActionList
-                    .OfType<Run>()
+                info.ActionList.OfType<Run>()
                     .OrderBy(v => v.Order)
                     .Select(v => $"{v.MethodName}();")
             );
@@ -125,7 +120,7 @@ public partial class {info.ClassName}
         }
     }
 
-    record Root(string Namespace, string ClassName, List<OnReadyAction> ActionList);
+    record Root(string Namespace, string ClassName, SeqList<OnReadyAction> ActionList);
 
     record OnReadyAction;
 
@@ -143,31 +138,4 @@ public partial class {info.ClassName}
     record Connect(string MethodName, string Source, string Signal) : OnReadyAction;
 
     record Run(string MethodName, int Order) : OnReadyAction;
-
-    class RootEqual : IEqualityComparer<Root>
-    {
-        public bool Equals(Root? x, Root? y)
-        {
-            if (ReferenceEquals(x, y))
-                return true;
-            if (ReferenceEquals(x, null))
-                return false;
-            if (ReferenceEquals(y, null))
-                return false;
-            if (x.GetType() != y.GetType())
-                return false;
-            return x.Namespace == y.Namespace
-                && x.ClassName == y.ClassName
-                && x.ActionList.SequenceEqual(y.ActionList);
-        }
-
-        public int GetHashCode(Root obj)
-        {
-            return (
-                obj.Namespace,
-                obj.ClassName,
-                obj.ActionList.GetSequenceHashCode()
-            ).GetHashCode();
-        }
-    }
 }

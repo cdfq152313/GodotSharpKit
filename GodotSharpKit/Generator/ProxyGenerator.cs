@@ -23,13 +23,11 @@ public class ProxyGenerator : IIncrementalGenerator
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        var syntaxProvider = context.SyntaxProvider
-            .ForAttributeWithMetadataName(
-                typeof(GodotProxy).FullName!,
-                IsSyntaxTarget,
-                GetSyntaxTarget
-            )
-            .WithComparer(new RootEqual());
+        var syntaxProvider = context.SyntaxProvider.ForAttributeWithMetadataName(
+            typeof(GodotProxy).FullName!,
+            IsSyntaxTarget,
+            GetSyntaxTarget
+        );
         context.RegisterSourceOutput(syntaxProvider.Collect(), OnExecute);
     }
 
@@ -48,7 +46,7 @@ public class ProxyGenerator : IIncrementalGenerator
             .GetAttributes()
             .First(v => v.AttributeClass?.FullName() == typeof(GodotProxy).FullName);
         var autoSnakeCase = godotProxyAttribute.ConstructorArguments[0].Value as bool? ?? false;
-        var actionList = new List<Member>();
+        var actionList = new SeqList<Member>();
         foreach (var member in interfaceSymbol.GetMembers())
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -77,9 +75,11 @@ public class ProxyGenerator : IIncrementalGenerator
                         godotName,
                         autoSnakeCase,
                         methodSymbol.ReturnsVoid ? null : methodSymbol.ReturnType.FullName(),
-                        methodSymbol.Parameters
-                            .Select(v => new Param(v.Type.FullName(), v.Name))
-                            .ToList()
+                        new SeqList<Param>(
+                            methodSymbol.Parameters.Select(
+                                v => new Param(v.Type.FullName(), v.Name)
+                            )
+                        )
                     ),
                 INamedTypeSymbol { DelegateInvokeMethod: not null } namedTypeSymbol
                     when namedTypeSymbol.Name.Contains("EventHandler")
@@ -87,9 +87,11 @@ public class ProxyGenerator : IIncrementalGenerator
                         namedTypeSymbol.Name.Replace("EventHandler", ""),
                         godotName,
                         autoSnakeCase,
-                        namedTypeSymbol.DelegateInvokeMethod.Parameters
-                            .Select(v => new Param(v.Type.FullName(), v.Name))
-                            .ToList()
+                        new SeqList<Param>(
+                            namedTypeSymbol.DelegateInvokeMethod.Parameters.Select(
+                                v => new Param(v.Type.FullName(), v.Name)
+                            )
+                        )
                     ),
                 _ => new NotImplement(),
             };
@@ -158,7 +160,7 @@ public partial class {info.ClassName} : I{info.ClassName}
         return sb.ToString();
     }
 
-    record Root(string Namespace, string ClassName, List<Member> MemberList);
+    record Root(string Namespace, string ClassName, SeqList<Member> MemberList);
 
     record Member
     {
@@ -203,7 +205,7 @@ public partial class {info.ClassName} : I{info.ClassName}
         string? GodotName,
         bool ApplyToSnake,
         string? Return,
-        List<Param> Params
+        SeqList<Param> Params
     ) : Member
     {
         public override string ToDeclaration()
@@ -234,7 +236,7 @@ public partial class {info.ClassName} : I{info.ClassName}
         }
     }
 
-    record Signal(string CSharpName, string? GodotName, bool ApplyToSnake, List<Param> Params)
+    record Signal(string CSharpName, string? GodotName, bool ApplyToSnake, SeqList<Param> Params)
         : Member
     {
         public override string ToDeclaration()
@@ -302,31 +304,4 @@ public partial class {info.ClassName} : I{info.ClassName}
     record NotImplement : Member;
 
     record Param(string Type, string Name);
-
-    class RootEqual : IEqualityComparer<Root>
-    {
-        public bool Equals(Root? x, Root? y)
-        {
-            if (ReferenceEquals(x, y))
-                return true;
-            if (ReferenceEquals(x, null))
-                return false;
-            if (ReferenceEquals(y, null))
-                return false;
-            if (x.GetType() != y.GetType())
-                return false;
-            return x.Namespace == y.Namespace
-                && x.ClassName == y.ClassName
-                && x.MemberList.SequenceEqual(y.MemberList);
-        }
-
-        public int GetHashCode(Root obj)
-        {
-            return (
-                obj.Namespace,
-                obj.ClassName,
-                obj.MemberList.GetSequenceHashCode()
-            ).GetHashCode();
-        }
-    }
 }

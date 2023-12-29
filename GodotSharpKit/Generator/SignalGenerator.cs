@@ -9,9 +9,11 @@ public class SignalGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        var syntaxProvider = context.SyntaxProvider
-            .ForAttributeWithMetadataName("Godot.SignalAttribute", IsSyntaxTarget, GetSyntaxTarget)
-            .WithComparer(new DelegateEqual());
+        var syntaxProvider = context.SyntaxProvider.ForAttributeWithMetadataName(
+            "Godot.SignalAttribute",
+            IsSyntaxTarget,
+            GetSyntaxTarget
+        );
         context.RegisterSourceOutput(syntaxProvider.Collect(), OnExecute);
     }
 
@@ -27,7 +29,7 @@ public class SignalGenerator : IIncrementalGenerator
     )
     {
         var delegateDeclarationSyntax = (DelegateDeclarationSyntax)context.TargetNode;
-        var signalParams = new List<ParamInfo>();
+        var signalParams = new SeqList<ParamInfo>();
         foreach (var p in delegateDeclarationSyntax.ParameterList.Parameters)
         {
             var typeSymbol = context.SemanticModel.GetSymbolInfo(p.Type!).Symbol!;
@@ -73,40 +75,11 @@ public partial class {info.ClassName}
         }
     }
 
-    class DelegateEqual : IEqualityComparer<DelegateInfo>
-    {
-        public bool Equals(DelegateInfo? x, DelegateInfo? y)
-        {
-            if (ReferenceEquals(x, y))
-                return true;
-            if (ReferenceEquals(x, null))
-                return false;
-            if (ReferenceEquals(y, null))
-                return false;
-            if (x.GetType() != y.GetType())
-                return false;
-            return x.Namespace == y.Namespace
-                && x.ClassName == y.ClassName
-                && x.SignalName == y.SignalName
-                && x.SignalParams.SequenceEqual(y.SignalParams);
-        }
-
-        public int GetHashCode(DelegateInfo obj)
-        {
-            return HashCode.Combine(
-                obj.Namespace,
-                obj.ClassName,
-                obj.SignalName,
-                obj.SignalParams.GetSequenceHashCode()
-            );
-        }
-    }
-
     record DelegateInfo(
         string Namespace,
         string ClassName,
         string SignalName,
-        List<ParamInfo> SignalParams
+        SeqList<ParamInfo> SignalParams
     );
 
     record ParamInfo(string Type, string Name);
