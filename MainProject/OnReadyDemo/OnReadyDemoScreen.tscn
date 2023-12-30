@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://pjj2oagedto2"]
+[gd_scene load_steps=4 format=3 uid="uid://pjj2oagedto2"]
 
 [ext_resource type="Script" path="res://OnReadyDemo/OnReadyDemoScreen.cs" id="1_2tst3"]
 [ext_resource type="PackedScene" uid="uid://kduh2c6omygn" path="res://OnReadyDemo/Inner/CustomNode.tscn" id="2_r3thd"]
+[ext_resource type="PackedScene" uid="uid://djt8qi1oiar0q" path="res://BackToLaunchScreen.tscn" id="3_t1185"]
 
 [node name="OnReadyDemoScreen" type="Node2D"]
 script = ExtResource("1_2tst3")
@@ -18,3 +19,5 @@ unique_name_in_owner = true
 unique_name_in_owner = true
 one_shot = true
 autostart = true
+
+[node name="BackToLaunchScreen" parent="." instance=ExtResource("3_t1185")]

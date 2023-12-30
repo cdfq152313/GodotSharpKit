@@ -1,3 +1,4 @@
+using System;
 using Godot;
 using Godot4Demo.OnReadyDemo.Inner;
 using GodotSharpKit.Misc;
@@ -38,8 +39,23 @@ public partial class OnReadyDemoScreen : Node2D
     }
 
     [OnReadyRun(1)]
-    private void Run1()
+    private IDisposable Run1()
     {
         GD.Print("One!");
+        return new MyDisposable();
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+        OnDispose();
+    }
+
+    class MyDisposable : IDisposable
+    {
+        public void Dispose()
+        {
+            GD.Print("MyDisposable");
+        }
     }
 }

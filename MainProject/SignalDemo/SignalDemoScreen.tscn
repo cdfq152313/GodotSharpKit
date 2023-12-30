@@ -1,6 +1,9 @@
-[gd_scene load_steps=2 format=3 uid="uid://celxrnvvfwcb1"]
+[gd_scene load_steps=3 format=3 uid="uid://celxrnvvfwcb1"]
 
 [ext_resource type="Script" path="res://SignalDemo/SignalDemoScreen.cs" id="1_233kj"]
+[ext_resource type="PackedScene" uid="uid://djt8qi1oiar0q" path="res://BackToLaunchScreen.tscn" id="2_5e5nd"]
 
 [node name="SignalDemoScreen" type="Node2D"]
 script = ExtResource("1_233kj")
+
+[node name="BackToLaunchScreen" parent="." instance=ExtResource("2_5e5nd")]

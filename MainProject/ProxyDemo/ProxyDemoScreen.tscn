@@ -1,6 +1,9 @@
-[gd_scene load_steps=2 format=3 uid="uid://3okm6bxxc0gm"]
+[gd_scene load_steps=3 format=3 uid="uid://3okm6bxxc0gm"]
 
 [ext_resource type="Script" path="res://ProxyDemo/ProxyDemoScreen.cs" id="1_5kccc"]
+[ext_resource type="PackedScene" uid="uid://djt8qi1oiar0q" path="res://BackToLaunchScreen.tscn" id="2_ju1ea"]
 
 [node name="ProxyDemoScreen" type="Node2D"]
 script = ExtResource("1_5kccc")
+
+[node name="BackToLaunchScreen" parent="." instance=ExtResource("2_ju1ea")]

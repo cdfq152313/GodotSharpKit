@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Text;
 using GodotSharpKit.Misc;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -34,6 +35,7 @@ public class OnReadyGenerator : IIncrementalGenerator
             from attribute in member.GetAttributes()
             select new { member, attribute };
         var actionList = new SeqList<OnReadyAction>();
+        bool hasDisposable = false;
         foreach (var data in query)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -62,14 +64,24 @@ public class OnReadyGenerator : IIncrementalGenerator
                 nameof(OnReadyRun) when data.member is IMethodSymbol methodSymbol
                     => new Run(
                         methodSymbol.Name,
-                        (int)data.attribute.ConstructorArguments[0].Value!
+                        (int)data.attribute.ConstructorArguments[0].Value!,
+                        methodSymbol.ReturnType.Name == nameof(IDisposable)
                     ),
                 _ => new OnReadyAction(),
             };
+            if (actionInfo is Run { IsDisposable: true })
+            {
+                hasDisposable = true;
+            }
             actionList.Add(actionInfo);
         }
 
-        return new Root(classSymbol.ContainingNamespace.FullName(), classSymbol.Name, actionList);
+        return new Root(
+            classSymbol.ContainingNamespace.FullName(),
+            classSymbol.Name,
+            hasDisposable,
+            actionList
+        );
     }
 
     private void OnExecute(SourceProductionContext context, ImmutableArray<Root> array)
@@ -78,51 +90,69 @@ public class OnReadyGenerator : IIncrementalGenerator
         {
             context.CancellationToken.ThrowIfCancellationRequested();
             var namespaceStatement = info.Namespace == "" ? "" : $"namespace {info.Namespace};";
-            var getNodeStatement = string.Join(
-                "\n        ",
-                info.ActionList.OfType<Get>()
-                    .Select(
-                        v =>
-                            $"{v.FieldName} = GetNode<{(v.FieldTypeNamespace == "" ? "" : $"{v.FieldTypeNamespace}.")}{v.FieldType}>(\"{v.FieldPath}\");"
-                    )
-            );
-            var connectSignalStatement = string.Join(
-                "\n        ",
-                info.ActionList.OfType<Connect>()
-                    .Select(
-                        v =>
-                            $"{(v.Source.Length == 0 ? "" : $"{v.Source}.")}{v.Signal} += {v.MethodName};"
-                    )
-            );
+            var onReadyStatementBuilder = new StringBuilder();
+            var orderActionList = new List<OnReadyAction>()
+                .Concat(info.ActionList.OfType<Get>())
+                .Concat(info.ActionList.OfType<Connect>())
+                .Concat(info.ActionList.OfType<Run>().OrderBy(v => v.Order));
 
-            var runStatement = string.Join(
-                "\n        ",
-                info.ActionList.OfType<Run>()
-                    .OrderBy(v => v.Order)
-                    .Select(v => $"{v.MethodName}();")
-            );
+            foreach (var action in orderActionList)
+            {
+                onReadyStatementBuilder.AppendLine();
+                context.CancellationToken.ThrowIfCancellationRequested();
+                onReadyStatementBuilder.AppendIndent(2);
+                onReadyStatementBuilder.Append(action.OnReadyStatement());
+            }
 
             context.AddSource(
                 $"{info.Namespace.ConcatDot(info.ClassName).Replace(".", "_")}.g.cs",
                 @$"{namespaceStatement}
+using System;
+using System.Collections.Generic;
 
 public partial class {info.ClassName} 
 {{ 
     private void OnReady()
-    {{
-        {getNodeStatement}
-        {connectSignalStatement}
-        {runStatement}
+    {{{onReadyStatementBuilder}
     }} 
+    
+    {DisposableExpression(info.HasDisposable)}
 }}
 "
             );
         }
     }
 
-    record Root(string Namespace, string ClassName, SeqList<OnReadyAction> ActionList);
+    private string DisposableExpression(bool hasDisposable)
+    {
+        return hasDisposable
+            ? @"private List<IDisposable> _disposables = new List<IDisposable>();
 
-    record OnReadyAction;
+    private void OnDispose()
+    {
+        foreach (var disposable in _disposables)
+        {
+            disposable.Dispose();
+        }
+        _disposables.Clear();
+    }"
+            : "";
+    }
+
+    record Root(
+        string Namespace,
+        string ClassName,
+        bool HasDisposable,
+        SeqList<OnReadyAction> ActionList
+    );
+
+    record OnReadyAction
+    {
+        public virtual string OnReadyStatement()
+        {
+            return "";
+        }
+    }
 
     record Get(string FieldName, string FieldType, string? _fieldPath, string FieldTypeNamespace)
         : OnReadyAction
@@ -133,9 +163,26 @@ public partial class {info.ClassName}
             FieldName.StartsWith("_")
                 ? $"%{FieldName[1].ToString().ToUpper()}{FieldName.Substring(2)}"
                 : $"%{FieldName}";
+
+        public override string OnReadyStatement()
+        {
+            return $"{FieldName} = GetNode<{(FieldTypeNamespace == "" ? "" : $"{FieldTypeNamespace}.")}{FieldType}>(\"{FieldPath}\");";
+        }
     }
 
-    record Connect(string MethodName, string Source, string Signal) : OnReadyAction;
+    record Connect(string MethodName, string Source, string Signal) : OnReadyAction
+    {
+        public override string OnReadyStatement()
+        {
+            return $"{(Source.Length == 0 ? "" : $"{Source}.")}{Signal} += {MethodName};";
+        }
+    }
 
-    record Run(string MethodName, int Order) : OnReadyAction;
+    record Run(string MethodName, int Order, bool IsDisposable) : OnReadyAction
+    {
+        public override string OnReadyStatement()
+        {
+            return IsDisposable ? $"_disposables.Add({MethodName}());" : $"{MethodName}();";
+        }
+    }
 }
