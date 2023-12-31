@@ -1,8 +1,11 @@
 ﻿# 1.2.2
-- Fix signal generator cannot use generic type. 
+- Fixed issue where the signal generator couldn't utilize generic types.
 
 # 2.0.0
-- Combine two nuget package to one.
+- Merged two NuGet packages into one.
 
 # 2.1.0
-- Provide Godot Proxy Generator.
+- Introduced the Godot Proxy Generator.
+
+# 2.2.0
+- Enhanced OnReadyRun to manage disposables.
