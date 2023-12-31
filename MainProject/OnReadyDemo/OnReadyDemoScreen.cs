@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Godot;
 using Godot4Demo.OnReadyDemo.Inner;
 using GodotSharpKit.Misc;
@@ -43,6 +44,13 @@ public partial class OnReadyDemoScreen : Node2D
     {
         GD.Print("One!");
         return new MyDisposable();
+    }
+
+    [OnReadyRun(3)]
+    private List<IDisposable> Run3()
+    {
+        GD.Print("Three!");
+        return new List<IDisposable>();
     }
 
     protected override void Dispose(bool disposing)

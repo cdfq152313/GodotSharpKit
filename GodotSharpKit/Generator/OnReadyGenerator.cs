@@ -73,7 +73,19 @@ public class OnReadyGenerator : IIncrementalGenerator
                         new Run(
                             methodSymbol.Name,
                             (int)data.attribute.ConstructorArguments[0].Value!,
-                            methodSymbol.ReturnType.Name == nameof(IDisposable)
+                            methodSymbol.ReturnType switch
+                            {
+                                { Name: nameof(IDisposable) } => Disposable.Single,
+                                INamedTypeSymbol
+                                {
+                                    Name: "List",
+                                    TypeArguments.Length: > 0
+                                } namedTypeSymbol
+                                    when namedTypeSymbol.TypeArguments.First().Name
+                                        == nameof(IDisposable)
+                                    => Disposable.List,
+                                _ => Disposable.None,
+                            }
                         )
                     );
                     break;
@@ -121,7 +133,7 @@ public partial class {info.ClassName}
     {{{onReadyStatementBuilder}
     }} 
     
-    {DisposableExpression(info.RunList.Any(v => v.IsDisposable))}
+    {DisposableExpression(info.RunList.Any(v => v.Disposable != Disposable.None))}
 }}
 "
             );
@@ -184,11 +196,23 @@ public partial class {info.ClassName}
         }
     }
 
-    record Run(string MethodName, int Order, bool IsDisposable) : OnReadyAction
+    record Run(string MethodName, int Order, Disposable Disposable) : OnReadyAction
     {
         public override string OnReadyStatement()
         {
-            return IsDisposable ? $"_disposables.Add({MethodName}());" : $"{MethodName}();";
+            return Disposable switch
+            {
+                Disposable.None => $"{MethodName}();",
+                Disposable.Single => $"_disposables.Add({MethodName}());",
+                Disposable.List => $"_disposables.AddRange({MethodName}());",
+            };
         }
+    }
+
+    public enum Disposable
+    {
+        None,
+        Single,
+        List
     }
 }
