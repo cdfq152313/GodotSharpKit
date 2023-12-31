@@ -21,6 +21,7 @@
         <AdditionalFiles Include="OnReadyDemo\*.tscn" Container="Scenes" Type="PackedScene"/>
         <AdditionalFiles Include="ProxyDemo\*.tscn" Container="Scenes" Type="PackedScene"/>
         <AdditionalFiles Include="SignalDemo\*.tscn" Container="Scenes" Type="PackedScene"/>
+        <AdditionalFiles Include="LaunchScreen.tscn" Container="Scenes" Type="PackedScene"/>
         <AdditionalFiles Include="AutoResDemo\Deep\Deep2\*.tscn" Container="A" Type="PackedScene"/>
         <AdditionalFiles Include="AutoResDemo\Fonts\*.tres" Container="Fonts" Type="Font"/>
         <AdditionalFiles Include="icon.svg"/>
