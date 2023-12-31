@@ -6,7 +6,7 @@
         <EnableDynamicLoading>true</EnableDynamicLoading>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="GodotSharpKit" Version="2.1.0"/>
+        <PackageReference Include="GodotSharpKit" Version="2.2.0"/>
     </ItemGroup>
     <!--   Local Development -->
 <!--    <ItemGroup>-->
