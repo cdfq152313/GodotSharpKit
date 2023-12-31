@@ -34,8 +34,9 @@ public class OnReadyGenerator : IIncrementalGenerator
             from member in classSymbol.GetMembers()
             from attribute in member.GetAttributes()
             select new { member, attribute };
-        var actionList = new SeqList<OnReadyAction>();
-        bool hasDisposable = false;
+        var getList = new SeqList<Get>();
+        var connectList = new SeqList<Connect>();
+        var runList = new SeqList<Run>();
         foreach (var data in query)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -46,41 +47,45 @@ public class OnReadyGenerator : IIncrementalGenerator
             {
                 continue;
             }
-            var actionInfo = data.attribute.AttributeClass!.Name switch
+            switch (data.attribute.AttributeClass!.Name)
             {
-                nameof(OnReadyGet) when data.member is IFieldSymbol fieldSymbol
-                    => new Get(
-                        fieldSymbol.Name,
-                        fieldSymbol.Type.Name,
-                        data.attribute.ConstructorArguments[0].Value as string,
-                        fieldSymbol.Type.ContainingNamespace.FullName()
-                    ),
-                nameof(OnReadyConnect) when data.member is IMethodSymbol methodSymbol
-                    => new Connect(
-                        methodSymbol.Name,
-                        (string)data.attribute.ConstructorArguments[0].Value!,
-                        (string)data.attribute.ConstructorArguments[1].Value!
-                    ),
-                nameof(OnReadyRun) when data.member is IMethodSymbol methodSymbol
-                    => new Run(
-                        methodSymbol.Name,
-                        (int)data.attribute.ConstructorArguments[0].Value!,
-                        methodSymbol.ReturnType.Name == nameof(IDisposable)
-                    ),
-                _ => new OnReadyAction(),
-            };
-            if (actionInfo is Run { IsDisposable: true })
-            {
-                hasDisposable = true;
+                case nameof(OnReadyGet) when data.member is IFieldSymbol fieldSymbol:
+                    getList.Add(
+                        new Get(
+                            fieldSymbol.Name,
+                            fieldSymbol.Type.Name,
+                            data.attribute.ConstructorArguments[0].Value as string,
+                            fieldSymbol.Type.ContainingNamespace.FullName()
+                        )
+                    );
+                    break;
+                case nameof(OnReadyConnect) when data.member is IMethodSymbol methodSymbol:
+                    connectList.Add(
+                        new Connect(
+                            methodSymbol.Name,
+                            (string)data.attribute.ConstructorArguments[0].Value!,
+                            (string)data.attribute.ConstructorArguments[1].Value!
+                        )
+                    );
+                    break;
+                case nameof(OnReadyRun) when data.member is IMethodSymbol methodSymbol:
+                    runList.Add(
+                        new Run(
+                            methodSymbol.Name,
+                            (int)data.attribute.ConstructorArguments[0].Value!,
+                            methodSymbol.ReturnType.Name == nameof(IDisposable)
+                        )
+                    );
+                    break;
             }
-            actionList.Add(actionInfo);
         }
 
         return new Root(
             classSymbol.ContainingNamespace.FullName(),
             classSymbol.Name,
-            hasDisposable,
-            actionList
+            getList,
+            connectList,
+            runList
         );
     }
 
@@ -92,9 +97,9 @@ public class OnReadyGenerator : IIncrementalGenerator
             var namespaceStatement = info.Namespace == "" ? "" : $"namespace {info.Namespace};";
             var onReadyStatementBuilder = new StringBuilder();
             var orderActionList = new List<OnReadyAction>()
-                .Concat(info.ActionList.OfType<Get>())
-                .Concat(info.ActionList.OfType<Connect>())
-                .Concat(info.ActionList.OfType<Run>().OrderBy(v => v.Order));
+                .Concat(info.GetList)
+                .Concat(info.ConnectList)
+                .Concat(info.RunList.OrderBy(v => v.Order));
 
             foreach (var action in orderActionList)
             {
@@ -116,7 +121,7 @@ public partial class {info.ClassName}
     {{{onReadyStatementBuilder}
     }} 
     
-    {DisposableExpression(info.HasDisposable)}
+    {DisposableExpression(info.RunList.Any(v => v.IsDisposable))}
 }}
 "
             );
@@ -142,8 +147,9 @@ public partial class {info.ClassName}
     record Root(
         string Namespace,
         string ClassName,
-        bool HasDisposable,
-        SeqList<OnReadyAction> ActionList
+        SeqList<Get> GetList,
+        SeqList<Connect> ConnectList,
+        SeqList<Run> RunList
     );
 
     record OnReadyAction
