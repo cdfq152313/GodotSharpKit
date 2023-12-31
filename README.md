@@ -1,10 +1,12 @@
 ﻿# Introduction
-GodotSharpKit offers four powerful generators to enhance your Godot game development:
+GodotSharpKit offers 4 powerful generators to enhance your Godot game development:
 
 1. OnReady Generator: Simplifies node initialization with automatically generated OnReady functions.
 2. Resource Generator: Automates resource file management, generating code to access resources in specific directories. Customize class names and specify resource types for efficient resource handling.
 3. Signal Generator: Streamlines signal emission by automatically generating EmitSignal functions based on delegate definitions. This ensures correct parameter types and error-free signal handling in your Godot and C# projects.
 4. Proxy Generator: Streamlines the creation of Godot C# class proxies from interfaces. This tool simplifies the process of defining interfaces for Godot objects by automatically generating corresponding C# classes.
+
+Below are an overview of the features, and you can also find examples in the `MainProject` folder on GitHub.
 
 # OnReady Generator
 
@@ -115,7 +117,10 @@ _timer.Timeout += OnTimeout;
 ## OnReadyRun:
 
 This attribute is used to mark a method that will be called in a specific order during the OnReady() method.
-The generated code will invoke these methods in ascending order based on the specified priority.
+The generated code will invoke these methods in ascending order based on the specified priority (default is 0). 
+It's can also help to handle disposables.
+
+### Basic Usage
 
 Given
 ```csharp
@@ -130,67 +135,160 @@ Run1();
 Run2();
 ```
 
+### Handling Disposable
+The methods that return `IDisposable` or `List<IDisposable>` will result in additional `OnDispose` methods.
+
+Given
+```csharp
+[OnReadyRun(2)]
+private void Run2() {/* method body */ }
+
+[OnReadyRun(1)]
+private IDisposable Run1() { /* method body */ }
+
+[OnReadyRun(3)]
+private List<IDisposable> Run3() { /* method body */ }
+```
+
+Will generate
+```csharp
+private void OnReady()
+{
+    _disposables.Add(Run1());
+    Run2();
+    _disposables.AddRange(Run3());
+} 
+
+private List<IDisposable> _disposables = new List<IDisposable>();
+
+private void OnDispose()
+{
+    foreach (var disposable in _disposables)
+    {
+        disposable.Dispose();
+    }
+    _disposables.Clear();
+}
+
+```
+
+Note: You need to explicitly call OnDispose in the Dispose method.
+```csharp
+protected override void Dispose(bool disposing)
+{
+    base.Dispose(disposing);
+    OnDispose();
+}
+```
+
 
 ## Full example
 ```csharp
 using System;
-using GodotSharpKit.Misc;
+using System.Collections.Generic;
 using Godot;
-using Godot4Demo.Inner;
+using Godot4Demo.OnReadyDemo.Inner;
+using GodotSharpKit.Misc;
 
-namespace Godot4Demo;
+namespace Godot4Demo.OnReadyDemo;
 
 [OnReady]
-public partial class LaunchScreen : Node2D
+public partial class OnReadyDemoScreen : Node2D
 {
-    [Signal]
-    public delegate void MySignalEventHandler();
-
     [OnReadyGet]
     private CustomNode _node1 = null!;
 
-    [OnReadyGet("haha")]
-    private Node _node2 = null!;
+    [OnReadyGet]
+    public Node Node2 = null!;
 
-    private Timer _timer = new();
+    [OnReadyGet("haha")]
+    private Node _node3 = null!;
+
+    [OnReadyGet]
+    private Timer _timer = null!;
 
     public override void _Ready()
     {
         base._Ready();
-        this.OnReady();
+        OnReady();
     }
 
-    [OnReadyConnect("", nameof(MySignal))]
-    private void OnMySignal() { }
-
     [OnReadyConnect(nameof(_timer), nameof(Timer.Timeout))]
-    private void OnTimeout() { }
+    private void OnTimeout()
+    {
+        GD.Print("Timeout!!!");
+    }
 
     [OnReadyRun(2)]
-    private void Run2() { }
+    private void Run2()
+    {
+        GD.Print("Two!");
+    }
 
     [OnReadyRun(1)]
-    private void Run1() { }
+    private IDisposable Run1()
+    {
+        GD.Print("One!");
+        return new MyDisposable();
+    }
+
+    [OnReadyRun(3)]
+    private List<IDisposable> Run3()
+    {
+        GD.Print("Three!");
+        return new List<IDisposable>();
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+        OnDispose();
+    }
+
+    class MyDisposable : IDisposable
+    {
+        public void Dispose()
+        {
+            GD.Print("MyDisposable");
+        }
+    }
 }
+
 ```
 
 Will generate
 
 ```csharp
-namespace Godot4Demo;
+namespace Godot4Demo.OnReadyDemo;
+using System;
+using System.Collections.Generic;
 
-public partial class LaunchScreen 
+public partial class OnReadyDemoScreen 
 { 
     private void OnReady()
     {
-        _node1 = GetNode<Inner.CustomNode>("%Node1");
-        _node2 = GetNode<Godot.Node>("haha");
-        MySignal += OnMySignal;
+        _node1 = GetNode<Godot4Demo.OnReadyDemo.Inner.CustomNode>("%Node1");
+        Node2 = GetNode<Godot.Node>("%Node2");
+        _node3 = GetNode<Godot.Node>("haha");
+        _timer = GetNode<Godot.Timer>("%Timer");
         _timer.Timeout += OnTimeout;
-        Run1();
+        _disposables.Add(Run1());
         Run2();
+        _disposables.AddRange(Run3());
     } 
+    
+    private List<IDisposable> _disposables = new List<IDisposable>();
+
+    private void OnDispose()
+    {
+        foreach (var disposable in _disposables)
+        {
+            disposable.Dispose();
+        }
+        _disposables.Clear();
+    }
 }
+
 ```
 
 # Resource Generator
